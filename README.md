@@ -1,1 +1,79 @@
-# Astro-program
+# 陨石撞击模拟器（Astro-program）
+
+一个基于简化物理模型的陆地陨石撞击模拟器：输入陨石材质、直径、速度、入射角等参数，实时计算撞击全过程，输出能量释放、撞击坑、冲击波、热辐射等灾害评估，并匹配历史上真实发生的陨石事件作为参照。
+
+## 功能特性
+
+- **全程物理仿真**：大气进入加热、陨体碎裂、空爆/地面撞击判定、撞击坑成形、冲击波传播、热辐射灼烧（`physics/` 独立模块化实现）
+- **灾害等级评估**：按释放能量划分 L1–L5 五个等级，输出空爆高度、坑径、各距离观测点的破坏效果
+- **真实事件模板库**：内置 132 条历史陨石事件模板（通古斯、车里雅宾斯克等），按能量/模式/材质自动匹配"同类事件"参照
+- **趣味科普**：能量当量换算（对比广岛原子弹、地震震级等）、口语化灾害叙述
+- **AI 增强（可选）**：接入 DeepSeek API，支持自然语言输入（"一颗 100 米的铁陨石以 30km/s 撞海洋会怎样"）、科学问答、深度灾害分析
+- **两种运行形态**：Flask Web 版 + 零依赖单文件离线 HTML 版
+
+## 快速开始
+
+### Web 版（推荐）
+
+```bash
+cd 陨石/final/v3.0
+pip install flask
+python appV2.0.py
+```
+
+浏览器访问 http://127.0.0.1:5003
+
+### 离线单文件版
+
+直接双击打开 `陨石/JAVA版html.html`，无需 Python 环境，全部计算在浏览器本地完成。
+
+### 启用 AI 功能（可选）
+
+物理模拟本身不需要任何密钥。如需 AI 问答/自然语言解析功能：
+
+1. 复制 `陨石/Aug12/config.example.json` 为 `陨石/final/v3.0/config.json`
+2. 将其中占位符替换为你自己的 [DeepSeek API Key](https://platform.deepseek.com/)
+
+`config.json` 已被 `.gitignore` 排除，密钥不会被提交。
+
+## 项目结构
+
+```
+陨石/
+├── final/v3.0/              # 发布版（Flask Web 应用）
+│   ├── appV2.0.py           # Web 服务、AI 接口、模板匹配
+│   ├── simulation.py        # 仿真主流程调度
+│   ├── physics/             # 物理引擎
+│   │   ├── atmosphere.py    # 大气减速与加热
+│   │   ├── breakup.py       # 陨体碎裂与空爆
+│   │   ├── crater.py        # 撞击坑
+│   │   ├── shockwave.py     # 冲击波
+│   │   ├── thermal.py       # 热辐射
+│   │   └── trajectory.py    # 轨迹积分
+│   └── templates/           # 前端页面
+├── Aug10 / Aug11 / Aug12/   # 历史迭代版本
+├── Aug12/_js_build/         # 离线单文件版构建脚本
+├── JAVA版html.html          # 离线单文件版（构建产物）
+└── 陨石模拟项目_程序开发实现报告.md
+```
+
+## API 接口
+
+| 端点 | 方法 | 说明 |
+|------|------|------|
+| `/api/simulate` | POST | 执行物理仿真，返回模式/等级/灾害数据 |
+| `/api/ai/parse-command` | POST | 自然语言 → 仿真参数 |
+| `/api/ai/narrative` | POST | 生成事件叙事 |
+| `/api/ai/fun-refs` | POST | 能量当量趣味参照 |
+| `/api/ai/qa` | POST | 陨石科学问答 |
+| `/api/ai/disaster` | POST | 深度灾害分析 |
+| `/api/db-info` | GET | 模板库信息 |
+
+## 技术栈
+
+Python 3.8+ / Flask / 原生 JavaScript / HTML Canvas
+
+## 说明
+
+- 计算基于公开的简化撞击物理模型（沙坑标度律、空爆能量耦合等），结果为量级估算，仅供科普学习，不作为工程依据。
+- `Aug10`–`Aug12` 目录为开发过程中的历史版本，仅 `final/v3.0` 为当前维护版本。
