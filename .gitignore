@@ -1,3 +1,11 @@
+# ===== 仅保留陨石项目，其余课程目录不上传 =====
+Class1/
+Class2/
+Class3/
+Class4/
+Class6/
+Class7/
+
 # ===== 敏感信息（API 密钥，切勿提交到公开仓库）=====
 **/config.json
 config.env
