@@ -1,0 +1,32 @@
+# ===== 敏感信息（API 密钥，切勿提交到公开仓库）=====
+**/config.json
+config.env
+api_key.py
+
+# ===== Python 缓存与虚拟环境 =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ===== 日志与运行时临时文件 =====
+*.log
+陨石/Aug12/_js_build/_verify.js
+
+# ===== 生成型大数据产物（可由脚本重新生成）=====
+陨石/Aug12/impact_db_v3.json
+
+# ===== 个人文档与参考资料（非代码，体积较大）=====
+*.docx
+*.pptx
+*.pdf
+*.mp4
+
+# ===== 系统/编辑器杂项 =====
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

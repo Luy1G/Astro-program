@@ -1,0 +1,79 @@
+[
+  {
+    "title": "Primordial black holes in excursion set theory: Formation probabilities, mass functions, and window functions",
+    "authors": [
+      "Hayami Iizuka",
+      "Daiki Saito",
+      "Koki Tokeshi"
+    ],
+    "summary": "We study the mass function of primordial black holes (PBHs) within the excursion-set theory, in which the response of the stochastic density contrast to the variation of the coarse-graining scale is described by colored noises. For several window functions often used in the literature, we investigate how this choice affects the formation probability as well as the resultant mass function of PBHs. It is found that the low-mass tail of the mass function differs from the one predicted from Carr's formula. The difference comes from the prevalence of correlated noises, by which degeneracy of the formation probabilities ceases to exist. Nevertheless, Carr's formula still provides a practical estimation in the vicinity of the characteristic mass scale, as long as a smooth window function in Fourier space is used.",
+    "updated": "2026-05-21",
+    "arxiv_id": "2605.22789v1"
+  },
+  {
+    "title": "Dimming of Photon Ring due to Photon-Axion Conversion around Kerr Black Holes",
+    "authors": [
+      "Rahul Dhyani",
+      "Sauvik Sen",
+      "Indrani Banerjee",
+      "Ashmita Chakraborty",
+      "Arindam Chatterjee"
+    ],
+    "summary": "We investigate photon-axion conversion in the vicinity of rotating Kerr black holes where strong gravity traps photons on near-circular trajectories, effectively enhancing the path length. We explore the observable signatures of such a conversion near the photon region. The process, driven by ambient magnetic fields, is significantly more efficient around supermassive black holes such as M87*, since the luminosity of photons increases with the mass of the BH. By numerically evaluating photon path lengths (on which the conversion depends), we analyze how key parameters-photon frequency, axion mass, photon-axion coupling, magnetic field strength, plasma density, and black hole spin-affect the conversion probability and the resultant dimming of photon spectral luminosity. We find that the conversion is most efficient at high frequencies (X-rays and gamma rays), while the frequency window associated with efficient conversion widens with an increase in the photon-axion coupling and a decrease in the electron density and the axion mass. The magnitude of dimming of the photon spectral luminosity depends primarily on the magnetic field, the photon-axion coupling and the BH spin. Our study reveals that rotating black holes generally exhibit enhanced dimming compared to static ones. Thus, if future telescopes achieving a resolution $\\sim 10^{-5}$ arcsec in the X-ray/gamma-ray band detect a dimming of the photon spectral luminosity, then they can provide interesting constraints on the axion mass and its coupling with photons.",
+    "updated": "2026-05-21",
+    "arxiv_id": "2605.22696v1"
+  },
+  {
+    "title": "Topological Thermodynamics of Generalized Bardeen Black Hole",
+    "authors": [
+      "A. A. M. Silva",
+      "M. H. Macedo",
+      "R. R. Landim"
+    ],
+    "summary": "Neves and Saa introduced a two parameter spacetime that includes the Hayward, Bardeen, and Simpson-Visser geometries as particular cases. In this work, we employ the generalized off-shell Helmholtz free energy method to investigate the thermodynamic properties of the generalized Bardeen black hole within a topological framework. We construct the associated vector field and analyze its zeros, whose winding numbers allow us to classify the thermodynamic branches and identify critical points associated with phase transitions. The regular black hole configurations exhibit two topological defects with opposite winding numbers, resulting in a vanishing total topological charge, while the Schwarzschild case contains a single unstable branch. Our results demonstrate how the regularization parameters affect the thermodynamic stability and phase structure of the spacetime.",
+    "updated": "2026-05-21",
+    "arxiv_id": "2605.22686v1"
+  },
+  {
+    "title": "Dynamics of Binary System around a Supermassive Black Hole :Binary Scattering and Eccentric vZLK Oscillations",
+    "authors": [
+      "Kei-ichi Maeda",
+      "Hirotada Okawa"
+    ],
+    "summary": "We study the dynamics of a binary orbiting a supermassive black hole (SMBH), focusing on both binary scattering in unbound orbits and eccentric von Zeipel-Lidov-Kozai (vZLK) oscillations in bound orbits. The motion is described in a local inertial frame in Kerr spacetime, where tidal effects are encoded in the Riemann curvature.\n  For unbound (parabolic and hyperbolic) orbits, we identify four scattering regimes-adiabatic, tidally affected, chaotic, and disruptive-depending on the binary semi-major axis. As the binary becomes softer, tidal interactions near periapsis lead to strong eccentricity excitation, large changes in the orbital parameters, and eventually chaotic behavior or tidal disruption, with a sensitive dependence on the argument of periapsis.\n  For eccentric bound (elliptic) orbits, the vZLK mechanism differs qualitatively from the standard one, although the $z$-component of the angular momentum in the local inertial frame remains approximately conserved. The evolution proceeds on a dynamical timescale and exhibits step-like changes driven by repeated periapsis passages, which can be interpreted as a sequence of scattering events. We refer to this behavior as scattering-type vZLK oscillations.\n  The rotation of the SMBH also modifies the oscillation profiles, although its effect is less significant than the dependence on the initial orbital parameters. These results suggest a unified picture of periapsis-driven tidal dynamics in galactic nuclei.",
+    "updated": "2026-05-21",
+    "arxiv_id": "2605.22525v1"
+  },
+  {
+    "title": "MICONIC: The multiphase circumnuclear region of Centaurus A as seen with JWST/MIRI MRS observations. I. Spectral inventory and properties of the warm molecular disk",
+    "authors": [
+      "L. Evangelista",
+      "P. Guillard",
+      "J. Martin",
+      "P. Salomé",
+      "A. Alonso Herrero",
+      "L. Pantoni",
+      "L. Hermosa Muñoz",
+      "V. Buiten",
+      "A. Labiano",
+      "M. García-Marín",
+      "L. Colina",
+      "T. Böker",
+      "D. Dicken",
+      "M. J. Ward",
+      "G. Wright",
+      "P. van der Werf",
+      "S. Garcia-Burillo",
+      "M. Baes",
+      "A. Eckart",
+      "G. Östlin",
+      "D. Rouan",
+      "F. Walter",
+      "R. A. Riffel",
+      "M. Güdel"
+    ],
+    "summary": "Supermassive black holes power Active Galactic Nuclei (AGN), injecting energy that regulates accretion and shapes host galaxies. We investigate the morphology, excitation, and kinematics of molecular hydrogen (H2) in the inner circumnuclear disk of Centaurus A, the nearest radio galaxy. We present JWST/MIRI MRS integral-field spectroscopy of the central 170x100 pc2 at 0.3\"-0.7\" (5-12 pc) resolution, focusing on pure rotational H2 lines. The spectra show strong nuclear continuum and bright H2 emission from S(1) to S(8), including the first S(8) detection in Centaurus A. Optically thin nuclear lines enable maps of temperature, column density, and ortho-to-para ratio from spaxel-level excitation-diagram fitting. Warm H2 shows a complex morphology, dominating the central region where CO emission is weak or undetected. Low-excitation H2 lines trace an inhomogeneous ring with a 20-pc-radius cavity aligned with the jet's near side, suggesting that the jet affects the morphology of the molecular disk. Higher-excitation lines form filamentary structures around the AGN. Kinematics are rotational with an S-shaped distortion, indicating non-circular motions or a warped disk. A coherent, low-dispersion (70 km/s) streamer spirals inward. A power-law temperature distribution yields a warm (100-2000 K) H2 mass of (5.6+/-1.4)e5 Msun and a dynamical mass of 5e8 Msun within 100 pc. Shock excitation is supported by enhanced H2/continuum and H2/PAH ratios, elevated [Ne III]/[Ne II], and sub-equilibrium ortho-to-para ratios (1.6-2.4). Turbulent dissipation can balance H2 cooling and likely dominates heating beyond 30 pc. In the inner 100 pc of Centaurus A, AGN feeding and feedback are linked: shocks excite H2, regulate the gas temperature, and prevent cooling below 100 K, explaining the weak CO emission and lack of a massive outflow. These shocks may drive angular momentum loss and help fuel the nucleus.",
+    "updated": "2026-05-21",
+    "arxiv_id": "2605.22497v1"
+  }
+]

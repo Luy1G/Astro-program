@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科普文章自动生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .form-section {
+            padding: 40px;
+            border-bottom: 1px solid #eee;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 1.1em;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+        .radio-option {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .radio-option:hover {
+            border-color: #667eea;
+        }
+        .radio-option.selected {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+        .radio-option h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .radio-option p {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .radio-option input {
+            display: none;
+        }
+        .btn-generate {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        .btn-generate:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .preview-section {
+            padding: 40px;
+            background: #fafafa;
+        }
+        .preview-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        #article-preview {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            min-height: 300px;
+            white-space: pre-wrap;
+            font-size: 1em;
+            line-height: 1.8;
+        }
+        .placeholder {
+            color: #999;
+            text-align: center;
+            padding: 100px 0;
+        }
+        .status {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            display: block;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        .saved-path {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: #e7f3ff;
+            border-radius: 8px;
+            color: #0066cc;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 科普文章自动生成器</h1>
+            <p>基于 arXiv 论文和 DeepSeek AI 的智能科普文章生成工具</p>
+        </header>
+
+        <div class="main-card">
+            <div class="form-section">
+                <div id="status" class="status"></div>
+
+                <div class="form-group">
+                    <label for="keyword">🔍 研究主题</label>
+                    <input type="text" id="keyword" placeholder="输入关键词，如：黑洞、人工智能、量子计算">
+                </div>
+
+                <div class="form-group">
+                    <label>📝 文章版本</label>
+                    <div class="radio-group">
+                        <label class="radio-option selected" id="option-public">
+                            <input type="radio" name="version" value="public" checked>
+                            <h3>📖 大众版</h3>
+                            <p>通俗易懂，适合普通读者</p>
+                        </label>
+                        <label class="radio-option" id="option-scholar">
+                            <input type="radio" name="version" value="scholar">
+                            <h3>📚 学者版</h3>
+                            <p>严谨专业，适合研究人员</p>
+                        </label>
+                    </div>
+                </div>
+
+                <button class="btn-generate" id="btn-generate" onclick="generateArticle()">
+                    🚀 生成文章
+                </button>
+            </div>
+
+            <div class="preview-section">
+                <h2>📄 文章预览</h2>
+                <div id="article-preview">
+                    <div class="placeholder">
+                        👈 请输入关键词并点击「生成文章」
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const radioOptions = document.querySelectorAll('.radio-option');
+        radioOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                radioOptions.forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                option.querySelector('input').checked = true;
+            });
+        });
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        async function generateArticle() {
+            const keyword = document.getElementById('keyword').value.trim();
+            const version = document.querySelector('input[name="version"]:checked').value;
+            const btn = document.getElementById('btn-generate');
+            const preview = document.getElementById('article-preview');
+
+            if (!keyword) {
+                showStatus('⚠️ 请输入关键词', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '⏳ 生成中...';
+            showStatus('🔄 正在搜索论文并生成文章，请稍候...', 'loading');
+            preview.innerHTML = '<div class="placeholder">⏳ 正在生成文章...</div>';
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ keyword, version }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus('✅ 文章生成成功！', 'success');
+                    preview.innerHTML = data.article;
+
+                    const savedPath = document.createElement('div');
+                    savedPath.className = 'saved-path';
+                    savedPath.textContent = '💾 已保存到：' + data.path;
+                    preview.appendChild(savedPath);
+                } else {
+                    showStatus('❌ 生成失败：' + data.error, 'error');
+                    preview.innerHTML = '<div class="placeholder">❌ 生成失败，请重试</div>';
+                }
+            } catch (error) {
+                showStatus('❌ 网络错误：' + error.message, 'error');
+                preview.innerHTML = '<div class="placeholder">❌ 网络错误，请检查服务器连接</div>';
+            }
+
+            btn.disabled = false;
+            btn.textContent = '🚀 生成文章';
+        }
+
+        document.getElementById('keyword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                generateArticle();
+            }
+        });
+    </script>
+</body>
+</html>

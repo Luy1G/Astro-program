@@ -1,0 +1,11 @@
+# 密钥配置（包含敏感信息，切勿提交）
+config.json
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 虚拟环境
+venv/
+.venv/

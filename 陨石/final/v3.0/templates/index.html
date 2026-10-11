@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>陆地陨石撞击模拟器 v3.0</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+  body { font-family: "Microsoft YaHei", Arial, sans-serif; background:#0a0e14; color:#e0e6ed; }
+  h1 { font-size: 18px; margin:0; padding:12px 20px; background:linear-gradient(90deg,#111820,#1a2636); border-bottom:1px solid #1f2933; color:#8b949e; font-weight:500; letter-spacing:1px; position:relative; z-index:20; }
+  h1 span { color:#58a6ff; font-weight:700; }
+  h1 .ver { color:#d2a8ff; font-size:12px; margin-left:8px; }
+
+  /* 全屏布局：canvas作为背景铺满视口，面板悬浮在上方 */
+  .fullscreen-canvas { position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:0; }
+  .fullscreen-canvas canvas { display:block; width:100%; height:100%; }
+
+  /* 左侧参数面板：固定悬浮在左上角 */
+  .panel-left { position:absolute; top:60px; left:10px; width:260px; z-index:10; background:rgba(20,26,34,0.88); backdrop-filter:blur(8px); padding:14px; overflow-y:auto; max-height:calc(100vh - 70px); border-radius:8px; border:1px solid rgba(88,166,255,0.15); }
+
+  /* 右侧信息面板：固定悬浮在右上角 */
+  .panel-right { position:absolute; top:60px; right:10px; width:340px; z-index:10; background:rgba(20,26,34,0.88); backdrop-filter:blur(8px); padding:14px; overflow-y:auto; max-height:calc(100vh - 70px); border-radius:8px; border:1px solid rgba(88,166,255,0.15); }
+
+  /* ===== v2.1 右侧面板增强样式 ===== */
+  /* Hero 卡：TNT 当量 */
+  .hero-card { background:linear-gradient(135deg,#1a1040,#0d2a4a); border:1px solid rgba(136,166,255,0.3); border-radius:10px; padding:14px 16px; margin-bottom:12px; text-align:center; }
+  .hero-card .hero-label { font-size:10px; color:#8b949e; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px; }
+  .hero-card .hero-value { font-size:28px; font-weight:800; background:linear-gradient(90deg,#58a6ff,#d2a8ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1.2; }
+  .hero-card .hero-sub { font-size:11px; color:#8b949e; margin-top:2px; }
+  /* 对数刻度尺 */
+  .tnt-scale { margin-top:10px; }
+  .tnt-scale .scale-track { height:8px; border-radius:4px; background:linear-gradient(90deg,#58a6ff,#3fb950,#d29922,#f78166,#f85149,#da3633); position:relative; }
+  .tnt-scale .scale-marker { position:absolute; top:-4px; width:4px; height:16px; background:#fff; border-radius:2px; box-shadow:0 0 6px rgba(255,255,255,0.8); transition:left 0.3s; }
+  .tnt-scale .scale-labels { display:flex; justify-content:space-between; margin-top:4px; font-size:8px; color:#6e7681; }
+
+  /* 2×2 指标网格 */
+  .metric-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+  .metric-card { background:#161b22; border:1px solid #21262d; border-radius:8px; padding:10px 12px; }
+  .metric-card .mc-label { font-size:10px; color:#6e7681; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+  .metric-card .mc-value { font-size:16px; font-weight:700; color:#e8eaed; font-family:Consolas,monospace; }
+  .metric-card .mc-unit { font-size:10px; color:#8b949e; margin-left:2px; }
+  .metric-card .mc-sub { font-size:10px; color:#6e7681; margin-top:2px; }
+
+  /* 大气烧蚀卡 */
+  .ablation-card { background:#161b22; border-radius:8px; padding:12px; margin-bottom:12px; border-left:4px solid #8957e5; }
+  .ablation-card .ac-title { font-size:11px; color:#d2a8ff; margin-bottom:8px; font-weight:600; }
+  .progress-row { margin-bottom:8px; }
+  .progress-row:last-child { margin-bottom:0; }
+  .progress-row .pr-header { display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px; }
+  .progress-row .pr-label { color:#8b949e; }
+  .progress-row .pr-value { color:#58a6ff; font-weight:600; font-family:Consolas,monospace; }
+  .progress-row .pr-bar { height:8px; background:#21262d; border-radius:4px; overflow:hidden; }
+  .progress-row .pr-fill { height:100%; border-radius:4px; transition:width 0.4s ease; }
+  .progress-row .pr-fill.purple { background:linear-gradient(90deg,#6f42c1,#8957e5); }
+  .progress-row .pr-fill.orange { background:linear-gradient(90deg,#d29922,#f78166); }
+  .progress-row .pr-fill.green { background:linear-gradient(90deg,#238636,#3fb950); }
+  .progress-row .pr-fill.red { background:linear-gradient(90deg,#da3633,#f85149); }
+
+  /* 终态模式卡 */
+  .mode-card { background:#161b22; border-radius:8px; padding:12px; margin-bottom:12px; border-left:4px solid #3fb950; }
+  .mode-card.air { border-left-color:#f85149; }
+  .mode-card.burn { border-left-color:#d29922; }
+  .mode-card .mc-mode-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .mode-card .mc-mode-icon { font-size:20px; }
+  .mode-card .mc-mode-name { font-size:14px; font-weight:700; }
+  .mode-card .mc-detail { font-size:11px; color:#8b949e; line-height:1.6; }
+
+  /* 灾害范围可视化 */
+  .disaster-card { background:#161b22; border-radius:8px; padding:12px; margin-bottom:12px; }
+  .disaster-card .dc-title { font-size:11px; color:#8b949e; margin-bottom:10px; font-weight:600; }
+  .disaster-bar { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .disaster-bar .db-label { width:60px; font-size:10px; color:#8b949e; text-align:right; flex-shrink:0; }
+  .disaster-bar .db-track { flex:1; height:18px; background:#21262d; border-radius:3px; overflow:hidden; position:relative; }
+  .disaster-bar .db-fill { height:100%; border-radius:3px; display:flex; align-items:center; padding-left:6px; }
+  .disaster-bar .db-text { font-size:9px; color:#fff; font-weight:600; white-space:nowrap; line-height:18px; }
+  .disaster-bar .db-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+  /* 能量换算卡 */
+  .energy-compare { background:#161b22; border-radius:8px; padding:12px; margin-bottom:12px; border:1px solid #21262d; }
+  .energy-compare .ec-title { font-size:11px; color:#d2a8ff; margin-bottom:8px; font-weight:600; }
+  .energy-compare .ec-item { display:flex; justify-content:space-between; align-items:center; padding:4px 0; font-size:11px; }
+  .energy-compare .ec-item .ec-name { color:#8b949e; }
+  .energy-compare .ec-item .ec-val { color:#d2a8ff; font-weight:600; font-family:Consolas,monospace; }
+  .energy-compare .ec-item .ec-bar { display:inline-block; width:50px; height:4px; background:#21262d; border-radius:2px; margin:0 6px; overflow:hidden; vertical-align:middle; }
+  .energy-compare .ec-item .ec-bar-fill { height:100%; background:#8957e5; border-radius:2px; }
+
+  /* 灾害等级卡 */
+  .level-card { border-radius:8px; padding:12px; margin-bottom:12px; text-align:center; }
+  .level-card.critical { background:linear-gradient(135deg,#3d1010,#1a0808); border:2px solid #da3633; }
+  .level-card.severe { background:linear-gradient(135deg,#3d2010,#1a1008); border:2px solid #f85149; }
+  .level-card.moderate { background:linear-gradient(135deg,#3d2a10,#1a2008); border:2px solid #f78166; }
+  .level-card.minor { background:linear-gradient(135deg,#2d2a10,#1a2008); border:2px solid #d29922; }
+  .level-card.safe { background:linear-gradient(135deg,#102d1a,#081a10); border:2px solid #3fb950; }
+  .level-card .lc-level { font-size:18px; font-weight:800; margin-bottom:4px; }
+  .level-card .lc-desc { font-size:11px; color:#8b949e; }
+  .level-card.critical .lc-level { color:#da3633; }
+  .level-card.severe .lc-level { color:#f85149; }
+  .level-card.moderate .lc-level { color:#f78166; }
+  .level-card.minor .lc-level { color:#d29922; }
+  .level-card.safe .lc-level { color:#3fb950; }
+
+  /* 底部动画控制栏：悬浮在底部居中 */
+  .anim-bar { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); z-index:10; padding:10px 16px; background:rgba(13,17,23,0.9); backdrop-filter:blur(8px); display:flex; gap:10px; align-items:center; font-size:12px; border:1px solid rgba(88,166,255,0.2); border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+
+  .section-title { font-size:11px; color:#58a6ff; text-transform:uppercase; letter-spacing:1.5px; margin:0 0 10px 0; padding-bottom:6px; border-bottom:1px solid #21262d; }
+  .control { margin-bottom:13px; }
+  .control label { display:flex; justify-content:space-between; font-size:12px; color:#8b949e; margin-bottom:5px; }
+  .control label .val { color:#58a6ff; font-weight:bold; font-family:Consolas,monospace; }
+  .control input[type=range] { width:100%; height:4px; background:#21262d; border-radius:2px; appearance:none; outline:none; }
+  .control input[type=range]::-webkit-slider-thumb { appearance:none; width:14px; height:14px; border-radius:50%; background:#58a6ff; cursor:pointer; box-shadow:0 0 6px rgba(88,166,255,0.5); }
+  select { width:100%; padding:6px 8px; background:#21262d; color:#e8eaed; border:1px solid #30363d; border-radius:4px; font-size:12px; outline:none; }
+  select:focus { border-color:#58a6ff; }
+  .btn { padding:9px 14px; background:linear-gradient(180deg,#238636,#1f7a2f); color:#fff; border:1px solid #2ea043; border-radius:6px; font-size:13px; cursor:pointer; width:100%; font-weight:600; transition:all .15s; }
+  .btn:hover { background:linear-gradient(180deg,#2ea043,#238636); box-shadow:0 0 12px rgba(46,160,67,0.3); }
+  .btn.ghost { background:transparent; color:#8b949e; border:1px solid #30363d; }
+  .btn.ghost:hover { background:#21262d; color:#e8eaed; }
+  .result-section { margin-bottom:16px; }
+  .result-section h3 { font-size:11px; color:#8b949e; margin:0 0 8px 0; text-transform:uppercase; letter-spacing:1px; }
+  .kv { display:flex; justify-content:space-between; font-size:11px; padding:3px 0; }
+  .kv .k { color:#6e7681; }
+  .kv .v { color:#e8eaed; font-weight:600; font-family:Consolas,monospace; }
+  .kv .v.highlight { color:#58a6ff; }
+  .level-box { padding:8px 12px; border-radius:6px; background:linear-gradient(135deg,#2d1810,#1a0f08); border-left:4px solid #f85149; margin:8px 0; font-size:12px; color:#ffa198; }
+  .level-box.info { background:linear-gradient(135deg,#0d1f2d,#0a1520); border-left-color:#58a6ff; color:#79c0ff; }
+  .level-box b { color:#f85149; }
+  .level-box.info b { color:#58a6ff; }
+  .fun-ref { background:#161b22; padding:8px 10px; border-radius:4px; margin-top:6px; font-size:11px; color:#8b949e; line-height:1.6; }
+  .fun-ref b { color:#d2a8ff; }
+  canvas { display:block; }
+  .anim-bar input[type=range] { flex:1; max-width:300px; height:4px; background:#21262d; border-radius:2px; appearance:none; }
+  .anim-bar input[type=range]::-webkit-slider-thumb { appearance:none; width:12px; height:12px; border-radius:50%; background:#58a6ff; cursor:pointer; }
+  .anim-bar span { color:#8b949e; }
+  .anim-bar .status { color:#3fb950; font-size:11px; }
+  .time-bar { flex:1; display:flex; align-items:center; gap:8px; }
+  .time-bar input[type=range] { flex:1; max-width:none; height:6px; background:#21262d; border-radius:3px; appearance:none; cursor:pointer; }
+  .time-bar input[type=range]::-webkit-slider-thumb { appearance:none; width:14px; height:14px; border-radius:50%; background:#58a6ff; cursor:grab; box-shadow:0 0 8px rgba(88,166,255,0.5); }
+  .time-bar input[type=range]:active::-webkit-slider-thumb { cursor:grabbing; }
+  .time-bar .time-label { font-family:Consolas,monospace; color:#8b949e; font-size:11px; min-width:90px; text-align:right; }
+  .tag { display:inline-block; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; }
+  .tag.air { background:#3d1a1a; color:#f85149; }
+  .tag.ground { background:#1a3d2a; color:#3fb950; }
+  .tag.burn { background:#2d2a1a; color:#d29922; }
+  .tnt-bar { margin-top:8px; padding:6px 10px; background:#161b22; border-radius:4px; font-size:11px; color:#8b949e; }
+  .tnt-bar .bar { height:6px; background:#21262d; border-radius:3px; margin-top:4px; overflow:hidden; }
+  .tnt-bar .bar-fill { height:100%; border-radius:3px; transition:width 0.3s; }
+
+  /* ============== AI 面板样式 ============== */
+  .ai-panel { background:linear-gradient(135deg,#0d1f2d,#1a0f28); border:1px solid #3a2a5c; border-radius:8px; padding:14px; margin-bottom:12px; }
+  .ai-panel .ai-title { font-size:12px; color:#d2a8ff; margin:0 0 10px 0; display:flex; align-items:center; gap:6px; }
+  .ai-panel .ai-title::before { content:'🤖'; }
+  .ai-btn { padding:8px 14px; background:linear-gradient(135deg,#6f42c1,#563d7c); color:#fff; border:none; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600; width:100%; margin-bottom:8px; transition:all .2s; }
+  .ai-btn:hover { background:linear-gradient(135deg,#8957e5,#6f42c1); box-shadow:0 0 12px rgba(111,66,193,0.4); }
+  .ai-btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .ai-output { background:#161b22; border-radius:6px; padding:10px; font-size:12px; color:#c9d1d9; line-height:1.7; max-height:200px; overflow-y:auto; display:none; white-space:pre-wrap; }
+  .ai-output.show { display:block; }
+  .ai-output.loading { color:#8b949e; font-style:italic; }
+  .ai-output::after { content:'▋'; color:#58a6ff; animation:blink 0.8s steps(2) infinite; }
+  .ai-output.done::after { content:''; }
+  @keyframes blink { 50% { opacity:0; } }
+
+  /* AI 灾害推演面板增强样式 */
+  .ai-narrative-panel { background:linear-gradient(135deg,#0d1f2d,#1a0f28); border:1px solid rgba(137,87,229,0.4); border-radius:10px; padding:16px; box-shadow:0 4px 20px rgba(111,66,193,0.15); }
+  .ai-narrative-panel .ai-title { font-size:14px; color:#d2a8ff; margin:0 0 12px 0; padding-bottom:8px; border-bottom:1px solid rgba(137,87,229,0.2); }
+  .ai-narrative-output { background:linear-gradient(180deg,#0d1117,#161b22); border:1px solid #21262d; border-radius:8px; padding:16px; font-size:13px; color:#c9d1d9; line-height:2.0; max-height:380px; overflow-y:auto; white-space:pre-wrap; word-break:break-word; margin-bottom:12px; box-shadow:inset 0 1px 3px rgba(0,0,0,0.3); }
+  .ai-narrative-output::-webkit-scrollbar { width:6px; }
+  .ai-narrative-output::-webkit-scrollbar-track { background:#0d1117; border-radius:3px; }
+  .ai-narrative-output::-webkit-scrollbar-thumb { background:#30363d; border-radius:3px; }
+  .ai-narrative-output::-webkit-scrollbar-thumb:hover { background:#484f58; }
+  .ai-narrative-output.loading { color:#8b949e; font-style:italic; }
+  .ai-paragraph { opacity:0; transition:opacity 0.5s ease; margin-bottom:10px; padding-left:10px; border-left:2px solid rgba(137,87,229,0.3); }
+  .ai-paragraph:last-child { margin-bottom:0; }
+
+</style>
+</head>
+<body>
+<h1>陆地陨石撞击模拟器 <span>v3.0</span></h1>
+<!-- 全屏canvas背景 -->
+<div class="fullscreen-canvas">
+  <canvas id="canvas"></canvas>
+</div>
+<!-- 左侧悬浮面板 -->
+<div class="panel-left">
+  <div class="section-title">输入参数</div>
+  <div class="control"><label>陨石材质</label>
+    <select id="material">
+      <option value="冰彗星">冰彗星 (1000 千克/立方米)</option>
+      <option value="岩石陨石" selected>岩石陨石 (3000 千克/立方米)</option>
+      <option value="铁陨石">铁陨石 (7800 千克/立方米)</option>
+    </select>
+  </div>
+  <div class="control"><label>陨石直径 <span class="val" id="diameterVal">50 米</span></label>
+    <input type="range" id="diameter" min="5" max="5000" value="50" step="1"></div>
+  <div class="control"><label>撞击速度 <span class="val" id="velocityVal">20 千米每秒</span></label>
+    <input type="range" id="velocity" min="12" max="70" value="20" step="0.5"></div>
+  <div class="control"><label>入射角 <span class="val" id="angleVal">45度</span></label>
+    <input type="range" id="angle" min="5" max="90" value="45" step="1"></div>
+  <div class="control"><label>撞击目标</label>
+    <div style="padding:6px 8px;background:#161b22;color:#3fb950;border:1px solid #21262d;border-radius:4px;font-size:12px;font-weight:600;">陆地</div></div>
+  <div class="control"><label>观测距离 <span class="val" id="obsVal">50 千米</span></label>
+    <input type="range" id="observer_distance" min="1" max="5000" value="50" step="1"></div>
+  <button class="btn" id="runBtn">▶ 运行模拟</button>
+  <div class="tnt-bar" id="tntBar" style="display:none;">
+    <div>爆炸量级 <span id="tntLabel">—</span></div>
+    <div class="bar"><div class="bar-fill" id="tntFill" style="width:0%;background:#3fb950;"></div></div>
+  </div>
+
+</div>
+
+<!-- 右侧悬浮面板 -->
+<div class="panel-right">
+  <div id="resultsArea" style="display:none;">
+    <!-- Hero 卡：TNT 当量 -->
+    <div class="hero-card">
+      <div class="hero-label">TNT 当量</div>
+      <div class="hero-value" id="tntHero">—</div>
+      <div class="hero-sub" id="tntHeroSub">—</div>
+      <div class="tnt-scale">
+        <div class="scale-track">
+          <div class="scale-marker" id="tntScaleMarker" style="left:0%;"></div>
+        </div>
+        <div class="scale-labels">
+          <span>1吨</span><span>100吨</span><span>1千吨</span><span>1万吨</span><span>10万吨</span><span>1百万吨</span><span>1亿吨</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2×2 指标网格 -->
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="mc-label">初始质量</div>
+        <div class="mc-value" id="metricMass">—</div>
+        <div class="mc-sub" id="metricMassSub">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">撞击速度</div>
+        <div class="mc-value" id="metricVel">—</div>
+        <div class="mc-sub" id="metricVelSub">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">初始动能</div>
+        <div class="mc-value" id="metricKE">—</div>
+        <div class="mc-sub" id="metricKESub">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">陨石直径</div>
+        <div class="mc-value" id="metricDia">—</div>
+        <div class="mc-sub" id="metricDiaSub">—</div>
+      </div>
+    </div>
+
+    <!-- 大气烧蚀卡 -->
+    <div class="ablation-card">
+      <div class="ac-title">大气烧蚀损耗</div>
+      <div class="progress-row">
+        <div class="pr-header">
+          <span class="pr-label">质量损失比</span>
+          <span class="pr-value" id="ablationRatio">—</span>
+        </div>
+        <div class="pr-bar"><div class="pr-fill purple" id="ablationBar" style="width:0%;"></div></div>
+      </div>
+      <div class="progress-row">
+        <div class="pr-header">
+          <span class="pr-label">能量沉积比</span>
+          <span class="pr-value" id="eAtmRatio">—</span>
+        </div>
+        <div class="pr-bar"><div class="pr-fill orange" id="eAtmBar" style="width:0%;"></div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:#6e7681;">
+        <span>烧蚀质量: <b id="ablationMass" style="color:#d2a8ff;">—</b></span>
+        <span>峰值高度: <b id="peakH" style="color:#d2a8ff;">—</b></span>
+      </div>
+    </div>
+
+    <!-- 终态模式卡 -->
+    <div class="mode-card" id="modeCard">
+      <div class="mc-mode-row">
+        <span class="mc-mode-icon" id="modeIcon">🌍</span>
+        <span class="mc-mode-name" id="modeName">—</span>
+      </div>
+      <div class="mc-detail" id="modeDetail">—</div>
+    </div>
+
+    <!-- 能量换算卡 -->
+    <div class="energy-compare">
+      <div class="ec-title">⚡ 能量换算</div>
+      <div class="ec-item">
+        <span class="ec-name">广岛原子弹</span>
+        <span><span class="ec-bar"><span class="ec-bar-fill" id="hiroshimaBar" style="width:0%;"></span></span><span class="ec-val" id="hiroshimaEq">—</span></span>
+      </div>
+      <div class="ec-item">
+        <span class="ec-name">三峡日发电</span>
+        <span><span class="ec-bar"><span class="ec-bar-fill" id="threeGorgesBar" style="width:0%;"></span></span><span class="ec-val" id="threeGorgesEq">—</span></span>
+      </div>
+      <div class="ec-item">
+        <span class="ec-name">里氏震级等效</span>
+        <span class="ec-val" id="richterEq">—</span>
+      </div>
+      <div class="ec-item">
+        <span class="ec-name">实际释放能量</span>
+        <span class="ec-val" id="eRelease">—</span>
+      </div>
+    </div>
+
+    <!-- 灾害范围可视化 -->
+    <div class="disaster-card">
+      <div class="dc-title">灾害范围 (千米)</div>
+      <div class="disaster-bar">
+        <span class="db-label">核心区</span>
+        <span class="db-dot" style="background:#ff4444;"></span>
+        <div class="db-track"><div class="db-fill" id="coreBar" style="width:0%;background:#ff4444;"><span class="db-text" id="coreText">—</span></div></div>
+      </div>
+      <div class="disaster-bar">
+        <span class="db-label">次级区</span>
+        <span class="db-dot" style="background:#ffa94d;"></span>
+        <div class="db-track"><div class="db-fill" id="secBar" style="width:0%;background:#ffa94d;"><span class="db-text" id="secText">—</span></div></div>
+      </div>
+      <div class="disaster-bar">
+        <span class="db-label">外围区</span>
+        <span class="db-dot" style="background:#ff6b6b;"></span>
+        <div class="db-track"><div class="db-fill" id="outerBar" style="width:0%;background:#ff6b6b;"><span class="db-text" id="outerText">—</span></div></div>
+      </div>
+      <div class="disaster-bar">
+        <span class="db-label">火球半径</span>
+        <span class="db-dot" style="background:#ffd700;"></span>
+        <div class="db-track"><div class="db-fill" id="fireballBar" style="width:0%;background:#ffd700;"><span class="db-text" id="fireballText">—</span></div></div>
+      </div>
+      <div class="disaster-bar">
+        <span class="db-label">烧伤半径</span>
+        <span class="db-dot" style="background:#ff8c00;"></span>
+        <div class="db-track"><div class="db-fill" id="burnBar" style="width:0%;background:#ff8c00;"><span class="db-text" id="burnText">—</span></div></div>
+      </div>
+      <div class="disaster-bar">
+        <span class="db-label">撞击坑径</span>
+        <span class="db-dot" style="background:#8b4513;"></span>
+        <div class="db-track"><div class="db-fill" id="craterBar" style="width:0%;background:#8b4513;"><span class="db-text" id="craterText">—</span></div></div>
+      </div>
+    </div>
+
+    <!-- 灾害等级卡 -->
+    <div class="level-card safe" id="disasterLevelCard">
+      <div class="lc-level" id="disasterLevelText">—</div>
+      <div class="lc-desc" id="disasterLevelDesc">—</div>
+    </div>
+
+    <!-- 观测点状态 -->
+    <div class="level-box info" id="obsDamage" style="text-align:center;font-size:11px;">—</div>
+  </div>
+  
+  <div id="aiFeatureArea" style="display:none;">
+    <div class="ai-panel ai-narrative-panel">
+      <div class="ai-title">🎯 AI 灾害推演</div>
+      <div id="narrativeOutput" class="ai-output ai-narrative-output">点击按钮生成推演…</div>
+      <button id="narrativeBtn" class="ai-btn">✨ 生成推演报告</button>
+    </div>
+  </div>
+</div>
+
+<!-- 底部悬浮动画控制栏 -->
+<div class="anim-bar">
+  <button class="btn" id="playBtn" style="width:auto;padding:6px 16px;font-size:12px;">▶ 播放</button>
+  <button class="btn ghost" id="resetBtn" style="width:auto;padding:6px 16px;font-size:12px;">↺ 重置</button>
+  <button class="btn ghost" id="resetViewBtn" style="width:auto;padding:6px 12px;font-size:12px;">⊡ 视角</button>
+  <div class="time-bar">
+    <input type="range" id="timeSlider" min="0" max="1000" value="0" step="1">
+    <span class="time-label" id="timeLabel">0.0 / 0.0 s</span>
+  </div>
+  <span>速度</span>
+  <input type="range" id="speedSlider" min="0.3" max="5" step="0.1" value="1">
+  <span id="speedVal">1.0×</span>
+  <span class="status" id="animStatus">就绪</span>
+</div>
+
+<script>
+// ============== 工具 ==============
+function fmt(n,d=2){if(!isFinite(n))return"0";const a=Math.abs(n);if(a>=1e12)return(n/1e12).toFixed(d)+" 万亿";if(a>=1e8)return(n/1e8).toFixed(d)+" 亿";if(a>=1e4)return(n/1e4).toFixed(d)+" 万";if(a>=1)return n.toFixed(d);return n.toFixed(4);}
+function hexToRgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+
+// ============== 画布 ==============
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+let W=900,H=620;
+function resizeCanvas(){
+  // canvas原生尺寸 = window.innerWidth / window.innerHeight
+  W=window.innerWidth;
+  H=window.innerHeight;
+  canvas.width=W;
+  canvas.height=H;
+  // 重新生成星空，确保铺满整个画布
+  initStarfield();
+  // 重设地球
+  if(typeof LAST_RESULT!=='undefined'&&LAST_RESULT)setupEarth();
+  // 触发重绘
+  if(typeof draw==='function')draw(performance.now());
+}
+// 窗口resize事件触发时，立刻更新canvas真实像素尺寸
+window.addEventListener('resize',resizeCanvas);
+
+// ============== 相机控制（拖拽平移 + 滚轮缩放）==============
+let CAM={x:0,y:0,zoom:1};
+function resetCamera(){CAM.x=0;CAM.y=0;CAM.zoom=1;}
+let _camDrag=false,_camLX=0,_camLY=0;
+canvas.addEventListener('mousedown',e=>{_camDrag=true;_camLX=e.clientX;_camLY=e.clientY;canvas.style.cursor='grabbing';e.preventDefault();});
+window.addEventListener('mousemove',e=>{
+  if(!_camDrag)return;
+  CAM.x+=e.clientX-_camLX;CAM.y+=e.clientY-_camLY;
+  _camLX=e.clientX;_camLY=e.clientY;
+  if(!ANIM.playing)draw(performance.now());
+});
+window.addEventListener('mouseup',()=>{_camDrag=false;canvas.style.cursor='grab';});
+canvas.addEventListener('mouseleave',()=>{_camDrag=false;canvas.style.cursor='grab';});
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  const factor=e.deltaY<0?1.12:0.89;
+  const nz=clamp(CAM.zoom*factor,0.08,3.0);
+  const sc=nz/CAM.zoom;
+  // 缩放中心为鼠标位置
+  CAM.x=mx-(mx-CAM.x)*sc;
+  CAM.y=my-(my-CAM.y)*sc;
+  CAM.zoom=nz;
+  if(!ANIM.playing)draw(performance.now());
+},{passive:false});
+canvas.style.cursor='grab';
+
+// ============== 星空 ==============
+let stars={far:[],mid:[],near:[]};
+function initStarfield(){
+  stars.far=[];stars.mid=[];stars.near=[];
+  // 远层星星：布满整个背景
+  for(let i=0;i<500;i++)stars.far.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*0.8+0.3,p:Math.random()*6.28,s:0.3+Math.random()*0.5});
+  // 中层星星：更亮
+  for(let i=0;i<200;i++)stars.mid.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2+0.6,p:Math.random()*6.28,s:0.6+Math.random()*0.8});
+  // 近层星星：大而亮
+  for(let i=0;i<50;i++)stars.near.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.8+1.2,p:Math.random()*6.28,s:0.8+Math.random()*1.2});
+}
+function drawStarfield(t){
+  // 计算世界坐标系中的可见区域
+  const visX=(-CAM.x)/CAM.zoom,visY=(-CAM.y)/CAM.zoom;
+  const visW=W/CAM.zoom,visH=H/CAM.zoom;
+  // 用固定的W/H取模（星点生成范围），确保任何缩放/平移下都铺满
+  function wrap(px,py){
+    return{x:((px-visX)%W+W)%W+visX,y:((py-visY)%H+H)%H+visY};
+  }
+  for(const s of stars.far){const p=wrap(s.x,s.y);const tw=0.4+0.4*Math.sin(t*0.001*s.p+s.p);ctx.fillStyle=`rgba(255,255,255,${tw.toFixed(3)})`;ctx.beginPath();ctx.arc(p.x,p.y,s.r,0,6.28);ctx.fill();}
+  for(const s of stars.mid){const p=wrap(s.x,s.y);const tw=0.5+0.45*Math.sin(t*0.0015*s.p+s.p);ctx.fillStyle=`rgba(230,240,255,${tw.toFixed(3)})`;ctx.beginPath();ctx.arc(p.x,p.y,s.r,0,6.28);ctx.fill();}
+  for(const s of stars.near){const p=wrap(s.x,s.y);const tw=0.65+0.5*Math.sin(t*0.002*s.p+s.p);
+    // 大星星带光晕
+    const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,s.r*3);
+    g.addColorStop(0,`rgba(255,250,230,${tw.toFixed(3)})`);
+    g.addColorStop(0.4,`rgba(255,240,200,${(tw*0.3).toFixed(3)})`);
+    g.addColorStop(1,'rgba(255,230,180,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,s.r*3,0,6.28);ctx.fill();
+    ctx.fillStyle=`rgba(255,250,230,${tw.toFixed(3)})`;
+    ctx.beginPath();ctx.arc(p.x,p.y,s.r,0,6.28);ctx.fill();}
+}
+
+// ============== 地球（地平线下整块地面）==============
+let EARTH=null;
+function setupEarth(){
+  const gy=H*0.5;
+  EARTH={gy,features:[],citySkyline:[]};
+  for(let i=0;i<15;i++)EARTH.features.push({x:Math.random()*W,y:gy+10+Math.random()*(H-gy)*0.8,s:15+Math.random()*35,a:0.3+Math.random()*0.4});
+  const baseH=18, count=28;
+  let cx=0;
+  for(let i=0;i<count;i++){
+    const w=20+Math.random()*50;
+    const h=baseH+Math.random()*55;
+    const type=Math.random();
+    let shape='rect';
+    if(type>0.85)shape='tower';
+    else if(type>0.65)shape='spire';
+    const cols=Math.max(1,Math.floor(w/8));
+    const rows=Math.max(1,Math.floor(h/10));
+    const wins=[];
+    for(let r=1;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        if(Math.random()<0.55){
+          wins.push({x:2+c*(w-4)/cols,y:3+r*(h-6)/rows});
+        }
+      }
+    }
+    EARTH.citySkyline.push({x:cx,w,h,shape,windows:wins});
+    cx+=w+3+Math.random()*8;
+  }
+  const totalW=cx;
+  EARTH.cityOffset=(W-totalW)/2;
+}
+function drawEarth(t){
+  if(!EARTH)return;const{gy}=EARTH;
+  // 可见世界坐标范围（考虑相机变换），地面延伸到所有可见区域
+  const visX=(-CAM.x)/CAM.zoom,visY=(-CAM.y)/CAM.zoom;
+  const visW=W/CAM.zoom,visH=H/CAM.zoom;
+  const farL=visX-visW,farR=visX+visW*2,farB=visY+visH*2;
+  const groundTop=gy;
+  // 大气辉光（地平线上方渐变带）
+  const gl=ctx.createLinearGradient(0,groundTop-60,0,groundTop+10);
+  gl.addColorStop(0,'rgba(30,60,100,0)');gl.addColorStop(0.6,'rgba(50,100,160,0.1)');gl.addColorStop(1,'rgba(80,140,200,0.3)');
+  ctx.fillStyle=gl;ctx.fillRect(farL,groundTop-60,farR-farL,70);
+  // 地平线下整块地面（矩形）- 强制陆地
+  const g=ctx.createLinearGradient(0,groundTop,0,farB);
+  g.addColorStop(0,'#2d4a2a');g.addColorStop(0.4,'#1a3018');g.addColorStop(1,'#080f08');
+  ctx.fillStyle=g;ctx.fillRect(farL,groundTop,farR-farL,farB-groundTop);
+  // 地平线细边
+  ctx.strokeStyle='rgba(90,140,90,0.4)';
+  ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(farL,groundTop);ctx.lineTo(farR,groundTop);ctx.stroke();
+  // 陆地纹理（限制在地面区域）
+  if(EARTH.features){
+    ctx.save();ctx.beginPath();ctx.rect(farL,groundTop,farR-farL,farB-groundTop);ctx.clip();
+    for(const f of EARTH.features){ctx.globalAlpha=f.a;ctx.fillStyle='rgba(20,50,25,1)';
+      ctx.beginPath();ctx.ellipse(f.x,f.y,f.s,f.s*0.35,0,0,6.28);ctx.fill();}
+    ctx.restore();
+  }
+  if(EARTH.citySkyline&&EARTH.citySkyline.length>0){
+    ctx.save();
+    const baseX=EARTH.cityOffset||0;
+    // 城市主轮廓
+    ctx.fillStyle='rgba(10,15,20,0.85)';
+    for(const b of EARTH.citySkyline){
+      const bx=baseX+b.x, by=groundTop-b.h;
+      if(bx+b.w<farL||bx>farR)continue;
+      if(b.shape==='rect'){
+        ctx.fillRect(bx,by,b.w,b.h);
+      }else if(b.shape==='tower'){
+        ctx.fillRect(bx+b.w*0.25,by+b.h*0.15,b.w*0.5,b.h*0.85);
+        ctx.fillRect(bx,by+b.h*0.35,b.w,b.h*0.65);
+        // 塔顶天线
+        ctx.fillRect(bx+b.w*0.45,by-6,b.w*0.1,6+b.h*0.15);
+      }else if(b.shape==='spire'){
+        ctx.fillRect(bx,by+b.h*0.4,b.w,b.h*0.6);
+        ctx.beginPath();
+        ctx.moveTo(bx,by+b.h*0.4);
+        ctx.lineTo(bx+b.w*0.5,by);
+        ctx.lineTo(bx+b.w,by+b.h*0.4);
+        ctx.closePath();ctx.fill();
+      }
+    }
+    // 窗户灯光
+    ctx.fillStyle='rgba(255,200,100,0.35)';
+    for(const b of EARTH.citySkyline){
+      const bx=baseX+b.x, by=groundTop-b.h;
+      if(bx+b.w<farL||bx>farR)continue;
+      for(const w of b.windows){
+        ctx.fillRect(bx+w.x, by+w.y, 2.5, 3);
+      }
+    }
+    ctx.restore();
+  }
+}
+
+// ============== 上海城市距离标尺 ==============
+// 上海为原点(0km)，西向城市在左侧(-)，东向城市在右侧(+)
+// 比例尺：1 km = 0.15 px（世界坐标），可配合滚轮缩放查看远近城市
+const CITY_SCALE = 0.15; // px per km（0.15 = 1px ≈ 6.7km）
+const DAMAGE_VIS = 1.0;   // 灾害圈与城市标记共用同一地理比例尺
+const SHANGHAI_CITIES = [
+  {name:'上海',         dist:0,     side: 0},
+  // 西向（左侧）
+  {name:'南京',         dist:272,   side:-1},
+  {name:'北京',         dist:1088,  side:-1},
+  {name:'深圳',         dist:1223,  side:-1},
+  {name:'海口',         dist:1758,  side:-1},
+  {name:'乌鲁木齐',     dist:3278,  side:-1},
+  {name:'迪拜',         dist:6420,  side:-1},
+  {name:'莫斯科',       dist:6800,  side:-1},
+  {name:'柏林',         dist:8650,  side:-1},
+  {name:'伦敦',         dist:9200,  side:-1},
+  {name:'巴黎',         dist:9300,  side:-1},
+  {name:'约翰内斯堡',   dist:12900, side:-1},
+  // 东向（右侧）
+  {name:'东京',         dist:1760,  side: 1},
+  {name:'悉尼',         dist:7800,  side: 1},
+  {name:'洛杉矶',       dist:10400, side: 1},
+  {name:'多伦多',       dist:11600, side: 1},
+  {name:'华盛顿',       dist:11840, side: 1},
+  {name:'纽约',         dist:11870, side: 1},
+  {name:'里约热内卢',   dist:18200, side: 1},
+  {name:'布宜诺斯艾利斯',dist:19200, side: 1},
+  {name:'圣地亚哥',     dist:19800, side: 1},
+];
+
+function drawCityMarkers(){
+  if(!EARTH) return;
+  const gy = EARTH.gy;
+  const cx = W / 2; // 上海位于屏幕中心
+
+  // 可见范围（世界坐标，含边距）
+  const visL = (-CAM.x) / CAM.zoom - 100;
+  const visR = (-CAM.x + W) / CAM.zoom + 100;
+
+  for(let i = 0; i < SHANGHAI_CITIES.length; i++){
+    const city = SHANGHAI_CITIES[i];
+    const px = cx + city.dist * city.side * CITY_SCALE;
+    if(px < visL || px > visR) continue; // 视口剔除
+
+    const isOrigin = city.name === '上海';
+    const color = isOrigin ? '#ffd700' : 'rgba(120,180,255,0.7)';
+    const dotColor = isOrigin ? '#ffd700' : 'rgba(100,170,255,0.9)';
+
+    // 竖线标记（上海实线，其他虚线）
+    ctx.strokeStyle = color;
+    ctx.lineWidth = isOrigin ? 2 : 1;
+    ctx.setLineDash(isOrigin ? [] : [3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(px, gy - 10);
+    ctx.lineTo(px, gy + 10);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 圆点
+    ctx.fillStyle = dotColor;
+    ctx.beginPath();
+    ctx.arc(px, gy, isOrigin ? 4 : 2.5, 0, 6.28);
+    ctx.fill();
+
+    // 标签上下交替：上海固定上方，其他按索引奇偶交替
+    // 左侧城市偶数(0,2,4...)在上方，奇数(1,3,5...)在下方
+    // 右侧城市同理，避免相邻城市标签重叠
+    var labelUp;
+    if(isOrigin){
+      labelUp = true;
+    } else {
+      // 按同侧城市计数交替
+      var sameSideIdx = 0;
+      for(var j = 0; j < i; j++){
+        if(SHANGHAI_CITIES[j].side === city.side) sameSideIdx++;
+      }
+      labelUp = (sameSideIdx % 2 === 0);
+    }
+
+    // 连接线：从圆点到标签
+    var lineEnd = labelUp ? gy - 18 : gy + 18;
+    ctx.strokeStyle = 'rgba(100,170,255,0.35)';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(px, gy);
+    ctx.lineTo(px, lineEnd);
+    ctx.stroke();
+
+    // 标签文字：城市名 + 距离分两行
+    ctx.font = isOrigin ? 'bold 11px "Microsoft YaHei"' : '10px "Microsoft YaHei"';
+    ctx.textAlign = 'center';
+    var nameText = isOrigin ? '★ 上海' : city.name;
+    var distText = city.dist > 0 ? city.dist.toLocaleString() + ' 千米' : '';
+    var nameW = ctx.measureText(nameText).width;
+    var distW = distText ? ctx.measureText(distText).width : 0;
+    var maxW = Math.max(nameW, distW);
+
+    // 标签背景圆角矩形
+    var bgH = distText ? 28 : 15;
+    var bgY = labelUp ? (gy - 18 - bgH) : (gy + 18);
+    var bgX = px - maxW/2 - 5;
+    ctx.fillStyle = isOrigin ? 'rgba(40,30,5,0.85)' : 'rgba(10,20,35,0.8)';
+    roundRect(ctx, bgX, bgY, maxW + 10, bgH, 4);
+    ctx.fill();
+    ctx.strokeStyle = isOrigin ? 'rgba(255,215,0,0.4)' : 'rgba(100,170,255,0.25)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    // 城市名
+    var textY = labelUp ? (bgY + 12) : (bgY + 12);
+    ctx.fillStyle = isOrigin ? '#ffd700' : 'rgba(180,220,255,0.95)';
+    ctx.fillText(nameText, px, textY);
+
+    // 距离（第二行）
+    if(distText){
+      ctx.font = '9px Consolas';
+      ctx.fillStyle = isOrigin ? 'rgba(255,215,0,0.7)' : 'rgba(120,170,220,0.7)';
+      ctx.fillText(distText, px, textY + 12);
+    }
+  }
+
+  // 比例尺（右下角地面区域）
+  const scaleKm = 1000; // 1000 千米 刻度
+  const scalePx = scaleKm * CITY_SCALE;
+  const sbx = cx + W * 0.3;
+  const sby = gy + 35;
+  if(sbx + scalePx < visR){
+    ctx.strokeStyle = 'rgba(150,200,255,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(sbx, sby);
+    ctx.lineTo(sbx + scalePx, sby);
+    ctx.moveTo(sbx, sby - 4);
+    ctx.lineTo(sbx, sby + 4);
+    ctx.moveTo(sbx + scalePx, sby - 4);
+    ctx.lineTo(sbx + scalePx, sby + 4);
+    ctx.stroke();
+    ctx.font = '10px Consolas';
+    ctx.fillStyle = 'rgba(150,200,255,0.6)';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${scaleKm} 千米`, sbx + scalePx/2, sby + 14);
+  }
+}
+// 大气分层（国际气象组织标准），单位 km。MAX_ALT=200 时热层截断到200km
+const ATMOSPHERE_LAYERS=[
+  {name:'对流层', bot:0,  top:12,  fill:'rgba(80,150,210,0.18)',  edge:'rgba(120,180,220,0.70)', label:'rgba(150,200,230,0.98)', desc:'天气现象'},
+  {name:'平流层', bot:12, top:50,  fill:'rgba(160,120,200,0.14)', edge:'rgba(180,140,220,0.60)', label:'rgba(200,160,230,0.98)', desc:'臭氧层'},
+  {name:'中间层', bot:50, top:85,  fill:'rgba(60,100,180,0.12)',  edge:'rgba(90,130,200,0.55)',  label:'rgba(140,170,220,0.98)', desc:'流星烧蚀'},
+  {name:'热层',   bot:85, top:600, fill:'rgba(180,80,120,0.14)',  edge:'rgba(200,100,140,0.50)', label:'rgba(220,130,170,0.98)', desc:'极光层'},
+];
+const ALT_CONTOUR_STEP=20; // km，等海拔线步长（MAX_ALT=200 时每条间距合适）
+
+function drawAtmosphereLayers(time){
+  if(!EARTH)return;
+  // 世界坐标系可见区域
+  const visX=(-CAM.x)/CAM.zoom, visW=W/CAM.zoom;
+  const farL=visX-visW, farR=visX+visW*2;
+  // 自下而上绘制各层（地面到高空）
+  for(const L of ATMOSPHERE_LAYERS){
+    const topH=Math.min(L.top, MAX_ALT);
+    if(topH<=L.bot) continue;
+    const yTop=altToY(topH);
+    const yBot=altToY(L.bot);
+    const yMid=(yTop+yBot)/2;  // 标签放在层中央，避免窄层标签溢出
+    // 填充色块
+    ctx.fillStyle=L.fill;
+    ctx.fillRect(farL, yTop, farR-farL, yBot-yTop);
+    // 顶部分界线（虚线）
+    ctx.save();
+    ctx.strokeStyle=L.edge; ctx.lineWidth=1; ctx.setLineDash([6,8]);
+    ctx.beginPath(); ctx.moveTo(farL, yTop); ctx.lineTo(farR, yTop); ctx.stroke();
+    ctx.restore();
+    // 右侧层名标签（层中央，带描述）
+    const labelX=farR-12;
+    const topStr=L.top>=600?Math.min(L.top,MAX_ALT)+'+':L.top;
+    const txt=L.name+'  '+L.bot+'~'+topStr+' 千米';
+    ctx.save();
+    ctx.font='11px "Microsoft YaHei"'; ctx.textBaseline='middle'; ctx.textAlign='right';
+    const tw=ctx.measureText(txt).width;
+    ctx.fillStyle='rgba(0,0,0,0.6)';
+    ctx.fillRect(labelX-tw-8, yMid-18, tw+12, 18);
+    ctx.fillStyle=L.label;
+    ctx.fillText(txt, labelX, yMid-9);
+    // 第二行：描述
+    const txt2=L.desc;
+    const tw2=ctx.measureText(txt2).width;
+    ctx.fillStyle='rgba(0,0,0,0.5)';
+    ctx.fillRect(labelX-tw2-8, yMid+1, tw2+12, 14);
+    ctx.fillStyle='rgba(180,200,220,0.75)';
+    ctx.font='10px "Microsoft YaHei"';
+    ctx.fillText(txt2, labelX, yMid+8);
+    ctx.restore();
+  }
+}
+
+function drawAltitudeContours(time){
+  if(!EARTH)return;
+  const visX=(-CAM.x)/CAM.zoom, visW=W/CAM.zoom;
+  const farL=visX-visW, farR=visX+visW*2;
+  // 每 10km 一条等海拔线
+  for(let h=ALT_CONTOUR_STEP; h<MAX_ALT; h+=ALT_CONTOUR_STEP){
+    const y=altToY(h);
+    // 虚线
+    ctx.save();
+    ctx.strokeStyle='rgba(120,160,200,0.38)'; ctx.lineWidth=0.9; ctx.setLineDash([3,6]);
+    ctx.beginPath(); ctx.moveTo(farL, y); ctx.lineTo(farR, y); ctx.stroke();
+    ctx.restore();
+    // 左侧高度标签
+    ctx.save();
+    ctx.font='10px Consolas,monospace'; ctx.textBaseline='middle'; ctx.textAlign='left';
+    const txt=h+' 千米';
+    const tw=ctx.measureText(txt).width;
+    ctx.fillStyle='rgba(0,0,0,0.55)';
+    ctx.fillRect(farL+4, y-7, tw+8, 14);
+    ctx.fillStyle='rgba(180,210,240,0.85)';
+    ctx.fillText(txt, farL+8, y);
+    ctx.restore();
+  }
+}
+
+// ============== 状态 ==============
+let LAST_RESULT=null;
+let ANIM={
+  playing:false,t:0,speed:1,rafId:null,lastFrame:0,
+  samples:[],groundHit:false,explodeT:null,totalT:1,totalAnimTime:1,
+  expX:0,expY:0,fireTNT:0,
+  // 粒子系统
+  particles:[],shockwaves:[],debris:[],dustClouds:[],
+  firePatches:[],smokeColumns:[],groundCracks:[],
+  craters:[],  // 陨石坑数组，支持多坑叠加
+  shakeAmp:0,
+  draggingTimeSlider:false,
+};
+
+// ============== UI ==============
+function updateLabels(){
+  document.getElementById('diameterVal').textContent=document.getElementById('diameter').value+' 米';
+  document.getElementById('velocityVal').textContent=document.getElementById('velocity').value+' 千米每秒';
+  document.getElementById('angleVal').textContent=document.getElementById('angle').value+'度';
+  document.getElementById('obsVal').textContent=document.getElementById('observer_distance').value+' 千米';
+}
+['diameter','velocity','angle','observer_distance','material'].forEach(id=>document.getElementById(id).addEventListener('input',updateLabels));
+document.getElementById('speedSlider').addEventListener('input',e=>{ANIM.speed=parseFloat(e.target.value);document.getElementById('speedVal').textContent=ANIM.speed.toFixed(1)+'×';});
+document.getElementById('runBtn').addEventListener('click',runSim);
+
+// ============== 模拟 ==============
+function runSim(){
+  const body={material:document.getElementById('material').value,
+    diameter:parseFloat(document.getElementById('diameter').value),
+    velocity:parseFloat(document.getElementById('velocity').value),
+    angle:parseFloat(document.getElementById('angle').value),
+    target:'陆地',
+    depth:0,
+    observer_distance:parseFloat(document.getElementById('observer_distance').value)};
+  document.getElementById('animStatus').textContent='计算中…';
+  fetch('/api/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(r=>r.json()).then(d=>{LAST_RESULT=d;renderResults(d);setupAnimation(d);playAnim();document.getElementById("aiFeatureArea").style.display="block";})
+    .catch(e=>{document.getElementById('animStatus').textContent='错误: '+e.message;});
+}
+function renderResults(d){
+  document.getElementById('resultsArea').style.display='block';
+
+  // ===== Hero 卡：TNT 当量 =====
+  const tnt=d.release.tnt_tons;
+  const tntMT=tnt/1e6;
+  let tntDisplay='';
+  if(tnt>=1e6) tntDisplay=(tntMT.toFixed(2))+' 百万吨';
+  else if(tnt>=1e3) tntDisplay=(tnt/1e3).toFixed(2)+' 千吨';
+  else tntDisplay=tnt.toFixed(1)+' 吨';
+  document.getElementById('tntHero').textContent=tntDisplay;
+  document.getElementById('tntHeroSub').textContent=fmt(tnt)+' 吨 TNT ｜ '+fmt(d.release.energy_j)+' 焦耳';
+  // 对数刻度尺标记位置：log10(tnt+1) / log10(1e8+1) * 100
+  const tntPct=clamp(Math.log10(tnt+1)/Math.log10(1e8+1)*100,0,100);
+  document.getElementById('tntScaleMarker').style.left=tntPct+'%';
+
+  // ===== 2×2 指标网格 =====
+  const massKg=d.initial.mass_kg;
+  let massDisp,massSub;
+  if(massKg>=1e9){massDisp=(massKg/1e9).toFixed(2);massSub='十亿 千克 ('+fmt(d.initial.mass_tons)+' 吨)';}
+  else if(massKg>=1e6){massDisp=(massKg/1e6).toFixed(2);massSub='百万 千克 ('+fmt(d.initial.mass_tons)+' 吨)';}
+  else if(massKg>=1e3){massDisp=(massKg/1e3).toFixed(2);massSub='千 千克 ('+fmt(d.initial.mass_tons)+' 吨)';}
+  else{massDisp=massKg.toFixed(1);massSub='千克 ('+fmt(d.initial.mass_tons)+' 吨)';}
+  document.getElementById('metricMass').innerHTML=massDisp+'<span class="mc-unit">千克</span>';
+  document.getElementById('metricMassSub').textContent=massSub;
+
+  const velKms=d.input_echo.velocity_kms;
+  document.getElementById('metricVel').innerHTML=velKms.toFixed(1)+'<span class="mc-unit">千米每秒</span>';
+  document.getElementById('metricVelSub').textContent=(velKms*3600).toFixed(0)+' 千米/时 ｜ 马赫 '+ (velKms/0.34).toFixed(0);
+
+  const keJ=d.initial.kinetic_energy_j;
+  let keDisp,keSub;
+  if(keJ>=1e15){keDisp=(keJ/1e15).toFixed(2);keSub='千万亿 焦耳 ('+fmt(keJ)+' 焦耳)';}
+  else if(keJ>=1e12){keDisp=(keJ/1e12).toFixed(2);keSub='万亿 焦耳 ('+fmt(keJ)+' 焦耳)';}
+  else if(keJ>=1e9){keDisp=(keJ/1e9).toFixed(2);keSub='十亿 焦耳 ('+fmt(keJ)+' 焦耳)';}
+  else{keDisp=fmt(keJ);keSub='焦耳';}
+  document.getElementById('metricKE').innerHTML=keDisp+'<span class="mc-unit">焦耳</span>';
+  document.getElementById('metricKESub').textContent=keSub;
+
+  const diaM=d.input_echo.diameter_m;
+  let diaSub;
+  if(diaM>=1000) diaSub=(diaM/1000).toFixed(2)+' 千米';
+  else diaSub=diaM.toFixed(0)+' 米';
+  document.getElementById('metricDia').innerHTML=diaM.toFixed(0)+'<span class="mc-unit">米</span>';
+  document.getElementById('metricDiaSub').textContent=diaSub+' ｜ '+d.input_echo.material;
+
+  // ===== 大气烧蚀卡 =====
+  const ablationPct=(d.trajectory.ablation_ratio*100);
+  document.getElementById('ablationRatio').textContent=ablationPct.toFixed(2)+' %';
+  document.getElementById('ablationBar').style.width=clamp(ablationPct,0,100)+'%';
+  const eAtmPct=(d.trajectory.energy_atm_ratio*100);
+  document.getElementById('eAtmRatio').textContent=eAtmPct.toFixed(2)+' %';
+  document.getElementById('eAtmBar').style.width=clamp(eAtmPct,0,100)+'%';
+  document.getElementById('ablationMass').textContent=fmt(d.trajectory.ablation_kg)+' 千克';
+  document.getElementById('peakH').textContent=fmt(d.trajectory.energy_peak_h_km)+' 千米';
+
+  // ===== 终态模式卡 =====
+  const ms=d.mode.mode;
+  const modeCard=document.getElementById('modeCard');
+  let modeIcon='🌍',modeClass='';
+  if(ms.includes('空爆')){modeIcon='💥';modeClass='air';}
+  else if(ms.includes('烧毁')){modeIcon='🔥';modeClass='burn';}
+  modeCard.className='mode-card '+modeClass;
+  document.getElementById('modeIcon').textContent=modeIcon;
+  document.getElementById('modeName').textContent=ms;
+  let detailText='';
+  detailText+='到达地面速度: '+fmt(d.trajectory.terminal.v_kms)+' 千米每秒';
+  detailText+=' ｜ 剩余质量: '+fmt(d.trajectory.terminal.m_kg)+' 千克';
+  if(d.mode.breakup_altitude_km!=null) detailText+=' ｜ 解体高度: '+fmt(d.mode.breakup_altitude_km)+' 千米';
+  document.getElementById('modeDetail').textContent=detailText;
+
+  // ===== 能量换算卡 =====
+  const hiroshima=tnt/15000; // 广岛原子弹约1.5万吨TNT
+  const hiroshimaStr=hiroshima>=1e6?(hiroshima/1e6).toFixed(2)+'M':hiroshima>=1e3?(hiroshima/1e3).toFixed(1)+'K':hiroshima.toFixed(2);
+  document.getElementById('hiroshimaEq').textContent=hiroshimaStr+' 枚';
+  document.getElementById('hiroshimaBar').style.width=clamp(Math.log10(hiroshima+1)/Math.log10(1e6+1)*100,0,100)+'%';
+
+  const threeGorgesDay=d.release.energy_j/8.64e13; // 三峡日均发电约8.64×10^13 J
+  document.getElementById('threeGorgesEq').textContent=fmt(threeGorgesDay)+' 天';
+  document.getElementById('threeGorgesBar').style.width=clamp(Math.log10(threeGorgesDay+1)/Math.log10(1e6+1)*100,0,100)+'%';
+
+  // 里氏震级等效: log10(E) = 1.5*M + 4.8 => M = (log10(E) - 4.8) / 1.5
+  const richter=(Math.log10(d.release.energy_j)-4.8)/1.5;
+  document.getElementById('richterEq').textContent=richter>0?'M '+richter.toFixed(1):'—';
+
+  document.getElementById('eRelease').textContent=fmt(d.release.energy_j)+' 焦耳';
+
+  // ===== 灾害范围可视化 =====
+  const sh=d.shockwave;
+  const th=d.thermal;
+  const cr=d.crater.crater_diameter_km||0;
+  // 找最大值做归一化
+  const maxRange=Math.max(sh.core_radius_km,sh.secondary_radius_km,sh.outer_radius_km,th.fireball_radius_km,th.burn_radius_km,cr,0.001);
+  function setBar(barId,textId,val,unit){
+    const bar=document.getElementById(barId);
+    const text=document.getElementById(textId);
+    if(val>0){
+      const pct=clamp(val/maxRange*100,2,100);
+      bar.style.width=pct+'%';
+      text.textContent=val.toFixed(val<0.1?4:2)+' '+(unit||'千米');
+    }else{
+      bar.style.width='0%';
+      text.textContent='—';
+    }
+  }
+  setBar('coreBar','coreText',sh.core_radius_km);
+  setBar('secBar','secText',sh.secondary_radius_km);
+  setBar('outerBar','outerText',sh.outer_radius_km);
+  setBar('fireballBar','fireballText',th.fireball_radius_km);
+  setBar('burnBar','burnText',th.burn_radius_km);
+  if(cr>0){
+    setBar('craterBar','craterText',cr);
+  }else{
+    document.getElementById('craterBar').style.width='0%';
+    document.getElementById('craterText').textContent=d.crater.note||'无';
+  }
+
+  // ===== 灾害等级卡 =====
+  const lv=d.disaster_level.level;
+  const lvCard=document.getElementById('disasterLevelCard');
+  let lvClass='safe';
+  if(lv.includes('毁灭')||lv.includes('灭绝'))lvClass='critical';
+  else if(lv.includes('巨型')||lv.includes('全球'))lvClass='severe';
+  else if(lv.includes('大型')||lv.includes('区域'))lvClass='moderate';
+  else if(lv.includes('中型')||lv.includes('局部'))lvClass='minor';
+  lvCard.className='level-card '+lvClass;
+  document.getElementById('disasterLevelText').textContent=lv;
+  document.getElementById('disasterLevelDesc').textContent=d.disaster_level.description||'';
+
+  // 观测点状态
+  document.getElementById('obsDamage').textContent=d.observer_damage;
+
+  // TNT量级条（左侧面板）
+  const bar=document.getElementById('tntBar'),fill=document.getElementById('tntFill'),lab=document.getElementById('tntLabel');
+  if(bar){
+    bar.style.display='block';
+    const pct2=clamp(Math.log10(tnt+1)/6*100,0,100);
+    fill.style.width=pct2+'%';
+    let lv2='',col='#3fb950';
+    if(tnt>=1e6){lv2='毁灭级 (≥1百万吨)';col='#da3633';}
+    else if(tnt>=1e5){lv2='巨型 (≥10万吨)';col='#f85149';}
+    else if(tnt>=1e4){lv2='大型 (≥1万吨)';col='#f78166';}
+    else if(tnt>=1e3){lv2='中型 (≥1千吨)';col='#d29922';}
+    else if(tnt>=1e2){lv2='小型 (≥100吨)';col='#3fb950';}
+    else if(tnt>=1){lv2='微型 (≥1吨)';col='#58a6ff';}
+    else{lv2='轻微 (<1吨)';col='#8b949e';}
+    lab.textContent=lv2;fill.style.background=col;
+  }
+}
+
+// ============== 坐标映射 ==============
+// MAX_ALT: 画面顶部对应的高度（km），决定显示范围
+// ENTRY_ALT: 陨石物理进入有效大气的起点高度（km），决定轨迹 x 缩放基准
+// 解耦两者：增大 MAX_ALT 可显示更高层大气，但不影响轨迹在画面中的水平位置
+const SKY_TOP=20,MAX_ALT=100,ENTRY_ALT=100;
+function altToY(h){
+  const gy=EARTH?EARTH.gy:H*0.5;
+  return SKY_TOP+(MAX_ALT-h)/MAX_ALT*(gy-SKY_TOP);
+}
+function sampleToScreen(s){
+  const a=parseFloat(document.getElementById('angle').value);
+  const cot=1/Math.tan(Math.max(a,5)*Math.PI/180);
+  const scale=(W/900)*5.0;
+  const h_eff=Math.min(Math.max(s.h_km,0),ENTRY_ALT);
+  return{x:W/2 - h_eff*cot*scale, y:altToY(s.h_km)};
+}
+
+function getTrajectoryGeometry(){
+  const a=parseFloat(document.getElementById('angle').value);
+  const angleRad=Math.max(a,5)*Math.PI/180;
+  const cot=1/Math.tan(angleRad);
+  const scale=(W/900)*5.0;
+  const gy=EARTH?EARTH.gy:H*0.5;
+
+  const impactX=W/2, impactY=gy;
+  const entryX=W/2 - ENTRY_ALT*cot*scale;
+  const entryY=altToY(ENTRY_ALT);
+
+  const ctrlH=ENTRY_ALT*0.5;
+  const ctrlX=impactX - (ENTRY_ALT-ctrlH)*cot*scale;
+  const ctrlY=altToY(ctrlH);
+
+  const spaceH=ENTRY_ALT*1.6;
+  const spaceX=entryX - spaceH*cot*scale;
+  const spaceY=altToY(ENTRY_ALT+spaceH);
+
+  return{
+    impactX,impactY,
+    entryX,entryY,
+    ctrlX,ctrlY,
+    spaceX,spaceY,
+    cot,scale
+  };
+}
+function bezierTFromH(h_km){
+  if(h_km>=ENTRY_ALT)return 0;
+  return 1 - h_km/ENTRY_ALT;
+}
+function bezierPos(t, p0x, p0y, p1x, p1y, p2x, p2y){
+  const u=1-t;
+  return{
+    x:u*u*p0x + 2*u*t*p1x + t*t*p2x,
+    y:u*u*p0y + 2*u*t*p1y + t*t*p2y
+  };
+}
+function meteorPathPos(h_km){
+  const g=getTrajectoryGeometry();
+  if(h_km>=ENTRY_ALT){
+    const above=h_km-ENTRY_ALT;
+    return{
+      x:g.entryX - above*g.cot*g.scale,
+      y:altToY(h_km)
+    };
+  }
+  const t=bezierTFromH(h_km);
+  return bezierPos(t, g.entryX, g.entryY, g.ctrlX, g.ctrlY, g.impactX, g.impactY);
+}
+
+// ============== 动画设置 ==============
+function setupAnimation(d){
+  ANIM.samples=d.trajectory.samples;
+  ANIM.t=0;ANIM.playing=false;ANIM.groundHit=false;ANIM.explodeT=null;
+  ANIM.particles=[];ANIM.shockwaves=[];ANIM.debris=[];ANIM.dustClouds=[];
+  ANIM.firePatches=[];ANIM.smokeColumns=[];ANIM.groundCracks=[];
+  ANIM.craters=[];
+  ANIM.shakeAmp=0;
+  ANIM.totalT=d.trajectory.samples.length>0?d.trajectory.samples[d.trajectory.samples.length-1].t:1;
+  ANIM.fireTNT=d.release.tnt_tons;
+  const ms=d.mode.mode;
+  if(ms.includes('空爆')||ms.includes('烧毁')){
+    const alt=d.mode.breakup_altitude_km||d.trajectory.energy_peak_h_km;
+    let best=null,bd=1e9;
+    for(const s of ANIM.samples){const dd=Math.abs(s.h_km-alt);if(dd<bd){bd=dd;best=s;}}
+    ANIM.explodeT=best?best.t:ANIM.totalT*0.5;
+  }else{
+    ANIM.explodeT=ANIM.totalT;
+  }
+  // 总动画时间 = 轨迹时间 + 爆炸效果展示时间
+  const explosionDuration = 15;
+  ANIM.totalAnimTime = ANIM.totalT + explosionDuration;
+  setupEarth();
+  // 初始化时间滑块
+  const ts = document.getElementById('timeSlider');
+  ts.min = 0;
+  ts.max = Math.round(ANIM.totalAnimTime * 100);
+  ts.value = 0;
+  updateTimeLabel();
+  draw();
+}
+
+function updateTimeLabel(){
+  const tl=document.getElementById('timeLabel');
+  if(!tl)return;
+  const t=ANIM.t;
+  const total=ANIM.totalAnimTime;
+  tl.textContent=t.toFixed(1)+' / '+total.toFixed(1)+' s';
+}
+
+// ============== 播放 ==============
+function playAnim(){
+  if(ANIM.playing)return;
+  if(!LAST_RESULT){runSim();return;}
+  // 如果已播放完毕，从头开始
+  if(ANIM.t>=ANIM.totalAnimTime)resetAnim();
+  ANIM.playing=true;ANIM.lastFrame=performance.now();
+  document.getElementById('playBtn').textContent='⏸ 暂停';
+  document.getElementById('animStatus').textContent='播放中…';
+  function frame(now){
+    if(!ANIM.playing)return;
+    const dt=(now-ANIM.lastFrame)/1000;ANIM.lastFrame=now;
+    stepAnim(dt);draw(now);
+    updateTimeLabel();
+    updateTimeSlider();
+    // 到达总动画时间则停止
+    if(ANIM.t>=ANIM.totalAnimTime){
+      ANIM.t=ANIM.totalAnimTime;
+      ANIM.playing=false;
+      document.getElementById('playBtn').textContent='▶ 播放';
+      document.getElementById('animStatus').textContent='完成';
+      return;
+    }
+    ANIM.rafId=requestAnimationFrame(frame);
+  }
+  ANIM.rafId=requestAnimationFrame(frame);
+}
+
+function pauseAnim(){
+  ANIM.playing=false;
+  if(ANIM.rafId){cancelAnimationFrame(ANIM.rafId);}
+  document.getElementById('playBtn').textContent='▶ 播放';
+  document.getElementById('animStatus').textContent='已暂停';
+}
+
+function resetAnim(){
+  ANIM.t=0;ANIM.groundHit=false;
+  ANIM.particles=[];ANIM.shockwaves=[];ANIM.debris=[];
+  ANIM.dustClouds=[];ANIM.firePatches=[];ANIM.smokeColumns=[];
+  ANIM.groundCracks=[];
+  ANIM.craters=[];
+  ANIM.shakeAmp=0;
+  if(ANIM.rafId){cancelAnimationFrame(ANIM.rafId);}
+  ANIM.playing=false;
+  document.getElementById('playBtn').textContent='▶ 播放';
+  document.getElementById('animStatus').textContent='已重置';
+  const ts=document.getElementById('timeSlider');
+  if(ts){ts.value=0;}
+  updateTimeLabel();
+  draw(performance.now());
+}
+
+function updateTimeSlider(){
+  const ts=document.getElementById('timeSlider');
+  if(!ts||ANIM.draggingTimeSlider)return;
+  ts.value = Math.round(ANIM.t * 100);
+}
+
+function seekToTime(t){
+  ANIM.t = clamp(t, 0, ANIM.totalAnimTime);
+  const wasPastExplode = ANIM.groundHit;
+  ANIM.groundHit = (ANIM.explodeT != null && ANIM.t >= ANIM.explodeT);
+
+  // 如果跳过了爆炸点，需要初始化爆炸效果
+  if(!wasPastExplode && ANIM.groundHit){
+    initExplosion();
+  } else if(wasPastExplode && !ANIM.groundHit){
+    // 往回拖动过了爆炸点，清空爆炸效果
+    ANIM.particles=[];ANIM.shockwaves=[];ANIM.debris=[];
+    ANIM.dustClouds=[];ANIM.firePatches=[];ANIM.smokeColumns=[];
+    ANIM.groundCracks=[];
+    ANIM.craters=[];
+    ANIM.shakeAmp=0;
+  }
+
+  // 根据当前时间重置粒子等效果
+  if(!ANIM.groundHit){
+    // 在爆炸前，重置到当前时间的状态
+    ANIM.particles=[];ANIM.shockwaves=[];ANIM.debris=[];
+    ANIM.dustClouds=[];ANIM.firePatches=[];ANIM.smokeColumns=[];
+    ANIM.groundCracks=[];
+    ANIM.craters=[];
+    ANIM.shakeAmp=0;
+  }
+
+  updateTimeLabel();
+  draw(performance.now());
+}
+document.getElementById('playBtn').addEventListener('click',()=>{
+  if(!LAST_RESULT){runSim();return;}
+  if(ANIM.playing)pauseAnim();
+  else playAnim();
+});
+document.getElementById('resetViewBtn').addEventListener('click',()=>{resetCamera();draw(performance.now());});
+document.getElementById('resetBtn').addEventListener('click',()=>{resetAnim();});
+
+// ============== 时间滑块拖拽 ==============
+const timeSlider = document.getElementById('timeSlider');
+if(timeSlider){
+  timeSlider.addEventListener('mousedown',()=>{ANIM.draggingTimeSlider=true;});
+  timeSlider.addEventListener('touchstart',()=>{ANIM.draggingTimeSlider=true;});
+  timeSlider.addEventListener('input',(e)=>{
+    ANIM.draggingTimeSlider=true;
+    const t = parseFloat(e.target.value)/100;
+    // 暂停自动播放
+    if(ANIM.playing){
+      ANIM.playing=false;
+      if(ANIM.rafId){cancelAnimationFrame(ANIM.rafId);}
+      document.getElementById('playBtn').textContent='▶ 播放';
+      document.getElementById('animStatus').textContent='已暂停';
+    }
+    seekToTime(t);
+  });
+  timeSlider.addEventListener('mouseup',()=>{ANIM.draggingTimeSlider=false;});
+  timeSlider.addEventListener('touchend',()=>{ANIM.draggingTimeSlider=false;});
+}
+
+function stepAnim(dt){
+  const step=dt*ANIM.speed;
+  if(ANIM.explodeT!=null&&!ANIM.groundHit&&ANIM.t<ANIM.explodeT&&ANIM.t+step>=ANIM.explodeT){
+    ANIM.t=ANIM.explodeT;
+    return;
+  }
+  ANIM.t+=step;
+  if(ANIM.t>ANIM.totalAnimTime)ANIM.t=ANIM.totalAnimTime;
+  if(ANIM.explodeT!=null&&ANIM.t>=ANIM.explodeT&&!ANIM.groundHit){ANIM.groundHit=true;initExplosion();}
+  if(ANIM.groundHit&&LAST_RESULT){
+    const sh=LAST_RESULT.shockwave,maxR_km=Math.max(sh.outer_radius_km,0.1);
+    const maxR=Math.max(maxR_km*CITY_SCALE*DAMAGE_VIS, 15);
+    const remaining=Math.max(ANIM.totalAnimTime-ANIM.explodeT,1);
+    const el=Math.max(0,ANIM.t-ANIM.explodeT),p=Math.min(el/remaining,1),e=1-Math.pow(1-p,3);
+    ANIM.shockwaves.forEach(sw=>{sw.r=maxR*e*sw.scale;sw.max=maxR*sw.scale;sw.life=Math.max(0.3,1-p*0.7);});
+  }
+  if(ANIM.shakeAmp>0.1)ANIM.shakeAmp*=0.92;else ANIM.shakeAmp=0;
+  updateAllEffects(dt);
+}
+
+// ============== 爆炸初始化（TNT驱动，科学阈值） ==============
+function initExplosion(){
+  if(!LAST_RESULT)return;
+  const ms=LAST_RESULT.mode.mode;
+  const isAir=ms.includes('空爆')||ms.includes('烧毁');
+  let ex,ey;
+  if(isAir){
+    const mp=getMeteorPos(ANIM.explodeT||0);
+    ex=mp.x;ey=mp.y;
+  }else{
+    const last=ANIM.samples[ANIM.samples.length-1];
+    const lp=sampleToScreen(last);
+    ex=lp.x;ey=lp.y;
+  }
+  ANIM.expX=ex;ANIM.expY=ey;
+  const tnt=ANIM.fireTNT;
+  // 强度系数：基于TNT当量的对数缩放，钳制在合理范围
+  const intensity=clamp(Math.log10(tnt+1),0,7);
+
+  // 冲击波（4层：闪光、核心、冲击、热辐射）
+  ANIM.shockwaves=[
+    {type:'flash',r:0,max:0,life:1,scale:1.2+intensity*0.12},
+    {type:'core',r:0,max:0,life:1,scale:1.0+intensity*0.08},
+    {type:'shock',r:0,max:0,life:1,scale:0.8+intensity*0.06},
+    {type:'heat',r:0,max:0,life:1,scale:0.5+intensity*0.05},
+  ];
+
+  // 爆炸火光粒子（数量随TNT增加，但有上限保持科学性）
+  const nP=Math.floor(30+intensity*25);
+  for(let i=0;i<nP;i++){
+    const a=Math.random()*6.28,sp=25+Math.random()*(60+intensity*30);
+    ANIM.particles.push({x:ex,y:ey,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,
+      life:0.5+Math.random()*0.7,decay:0.008+Math.random()*0.012,
+      size:1+Math.random()*(1.5+intensity*0.3),
+      color:Math.random()<0.5?'#ff8c00':(Math.random()<0.5?'#ffd700':'#ff4500')});
+  }
+
+  // 碎片（少量，模拟抛射物）
+  const nD=Math.floor(8+intensity*6);
+  for(let i=0;i<nD;i++){
+    const a=Math.random()*6.28,sp=50+Math.random()*(90+intensity*20);
+    ANIM.debris.push({x:ex,y:ey,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-30,
+      life:0.8+Math.random()*0.8,size:2+Math.random()*3,rot:Math.random()*6.28,rotV:(Math.random()-0.5)*5});
+  }
+
+  // ===== 陆地专属：起火 + 冒烟 + 尘云 + 地裂 =====
+  if(!isAir){
+    // 尘云（褐色，模拟地表抛尘）
+    const nDu=Math.floor(10+intensity*8);
+    for(let i=0;i<nDu;i++){
+      const a=-Math.PI/2+(Math.random()-0.5)*Math.PI*1.0,sp=15+Math.random()*(40+intensity*15);
+      ANIM.dustClouds.push({x:ex+(Math.random()-0.5)*10,y:ey,
+        vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,
+        life:1.2+Math.random()*1.2,decay:0.004+Math.random()*0.006,
+        size:6+Math.random()*12,color:'rgba(120,100,70,0.35)'});
+    }
+    // 地裂（TNT≥10吨时出现，模拟地表破裂）
+    if(tnt>=10){
+      const nC=Math.floor(3+intensity*1.5);
+      for(let i=0;i<nC;i++){
+        const a=Math.random()*6.28,len=25+intensity*20;
+        ANIM.groundCracks.push({x1:ex+Math.cos(a)*4,y1:ey+Math.sin(a)*4,
+          x2:ex+Math.cos(a)*len,y2:ey+Math.sin(a)*len,life:1});
+      }
+    }
+  }
+
+  // ===== 起火效果（TNT≥1吨，科学阈值：足够热能引发燃烧） =====
+  if(tnt>=1){
+    const nF=Math.floor(4+intensity*4);
+    for(let i=0;i<nF;i++){
+      ANIM.firePatches.push({x:ex+(Math.random()-0.5)*15,y:ey+(isAir?(Math.random()-0.5)*30:0),
+        vx:(Math.random()-0.5)*15,vy:-8-Math.random()*25,
+        life:0.5+Math.random()*0.7,decay:0.01+Math.random()*0.012,
+        size:3+Math.random()*6,temp:0.8+Math.random()*0.4});
+    }
+  }
+
+  // ===== 烟雾柱（TNT≥100吨，大规模燃烧产生持续烟雾） =====
+  if(tnt>=100){
+    const nSm=Math.floor(2+intensity*1.5);
+    for(let i=0;i<nSm;i++){
+      ANIM.smokeColumns.push({x:ex+(Math.random()-0.5)*20,y:ey,
+        vx:(Math.random()-0.5)*4,vy:-15-Math.random()*20,
+        life:1.8+Math.random()*1.5,decay:0.002+Math.random()*0.003,
+        size:8+Math.random()*15});
+    }
+  }
+
+  // 屏幕震动（强度受限于科学性）
+  ANIM.shakeAmp=clamp(intensity*2,0,10);
+
+  // ===== 陨石坑生成（仅地表撞击；空爆/烧毁不生成坑）=====
+  // 坑在爆炸动画结束后才淡入显示（bornT 设为爆炸后延迟80时间单位）
+  const impactAngle=parseFloat(document.getElementById('angle').value);
+  const isLowAngle=impactAngle<15;
+
+  if(!isAir){
+    if(LAST_RESULT.crater && LAST_RESULT.crater.crater_diameter_km>0){
+      const dkm=LAST_RESULT.crater.crater_diameter_km;
+      console.log('[陨石坑] 陆地模式 直径:', dkm.toFixed(2), 'km  像素半径:', craterRadiusPx(dkm).toFixed(1), 'px  低角度:', isLowAngle);
+      ANIM.craters.push({
+        x:ex, y:ey,
+        diameter_km:dkm,
+        isLowAngle:isLowAngle,
+        bornT:ANIM.explodeT||0,
+      });
+    }
+  }
+}
+
+// ============== 效果更新 ==============
+function updateAllEffects(dt){
+  // 爆炸粒子
+  const np=[];
+  for(const p of ANIM.particles){
+    p.x+=p.vx*dt;p.y+=p.vy*dt;
+    p.vy+=70*dt;p.vx*=0.98;p.vy*=0.98;p.life-=p.decay;
+    if(p.life>0)np.push(p);
+  }
+  ANIM.particles=np;
+  // 碎片
+  const nd=[];
+  for(const d of ANIM.debris){
+    d.x+=d.vx*dt;d.y+=d.vy*dt;d.vy+=130*dt;d.vx*=0.99;d.vy*=0.99;d.rot+=d.rotV*dt;
+    if(d.life>0)nd.push(d);
+  }
+  ANIM.debris=nd;
+  // 尘云
+  const dd=[];
+  for(const d of ANIM.dustClouds){
+    d.x+=d.vx*dt;d.y+=d.vy*dt;d.vx*=0.96;d.vy*=0.96;d.size+=6*dt;d.life-=d.decay;
+    if(d.life>0)dd.push(d);
+  }
+  ANIM.dustClouds=dd;
+  // 火焰
+  const df=[];
+  for(const f of ANIM.firePatches){
+    f.x+=f.vx*dt;f.y+=f.vy*dt;f.vx*=0.95;f.vy*=0.95;f.temp*=0.97;f.life-=f.decay;
+    if(f.life>0)df.push(f);
+  }
+  ANIM.firePatches=df;
+  // 烟雾
+  const ds=[];
+  for(const s of ANIM.smokeColumns){
+    s.x+=s.vx*dt;s.y+=s.vy*dt;s.vx*=0.98;s.vy*=0.98;s.size+=12*dt;s.life-=s.decay;
+    if(s.life>0)ds.push(s);
+  }
+  ANIM.smokeColumns=ds;
+  // 地裂
+  for(const c of ANIM.groundCracks)c.life-=0.008;
+  ANIM.groundCracks=ANIM.groundCracks.filter(c=>c.life>0);
+}
+
+// ============== 渲染 ==============
+function draw(time){
+  const now=time||performance.now();
+  let sx=0,sy=0;
+  if(ANIM.shakeAmp>0.1){sx=(Math.random()-0.5)*ANIM.shakeAmp;sy=(Math.random()-0.5)*ANIM.shakeAmp;}
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  // 应用相机变换（所有绘制元素统一变换：拖拽平移+滚轮缩放）
+  ctx.translate(CAM.x+sx,CAM.y+sy);
+  ctx.scale(CAM.zoom,CAM.zoom);
+
+  // 背景渐变（填充世界坐标系中的可见区域）
+  const visX=(-CAM.x-sx)/CAM.zoom,visY=(-CAM.y-sy)/CAM.zoom;
+  const visW=W/CAM.zoom,visH=H/CAM.zoom;
+  const bg=ctx.createLinearGradient(0,visY,0,visY+visH);
+  bg.addColorStop(0,'#020308');bg.addColorStop(0.35,'#040810');
+  bg.addColorStop(0.65,'#081420');bg.addColorStop(0.85,'#0c1a28');bg.addColorStop(1,'#060e18');
+  ctx.fillStyle=bg;ctx.fillRect(visX,visY,visW,visH);
+
+  drawStarfield(now);
+  drawEarth(now);
+  drawCityMarkers();
+  drawCraters(now);
+  drawAtmosphereLayers(now);   // 大气分层（半透明色块）
+  drawAltitudeContours(now);   // 等海拔高度线（每10km一条）
+  if(!LAST_RESULT){drawIdle();ctx.restore();return;}
+  drawTrajectory();
+  drawMeteoroid(now);
+  drawAllEffects(now);
+  drawExplosion(now);
+  drawDamageRanges();
+  ctx.restore(); // 取消相机变换，HUD不受影响
+
+  drawHUD(now);
+}
+
+function drawIdle(){
+  ctx.fillStyle='rgba(139,148,158,0.6)';ctx.font='16px "Microsoft YaHei"';ctx.textAlign='center';
+  ctx.fillText('点击「▶ 运行模拟」开始',W/2,H/2);
+  ctx.font='12px "Microsoft YaHei"';ctx.fillStyle='rgba(139,148,158,0.4)';
+  ctx.fillText('调节左侧参数后点击运行',W/2,H/2+24);ctx.textAlign='left';
+}
+
+// 轨迹
+function drawTrajectory(){
+  const g=getTrajectoryGeometry();
+  const last=ANIM.samples.length>0?ANIM.samples[ANIM.samples.length-1]:null;
+  const endH=last?Math.max(last.h_km,0):0;
+  const endT=bezierTFromH(Math.max(endH,0));
+
+  // 全轨迹虚线（太空直线 + 贝塞尔曲线）
+  ctx.save();
+  ctx.strokeStyle='rgba(255,160,60,0.15)';
+  ctx.lineWidth=1.5;
+  ctx.setLineDash([4,6]);
+  ctx.beginPath();
+  ctx.moveTo(g.spaceX, g.spaceY);
+  ctx.lineTo(g.entryX, g.entryY);
+  ctx.quadraticCurveTo(g.ctrlX, g.ctrlY, g.impactX, g.impactY);
+  ctx.stroke();
+  ctx.restore();
+
+  // 已走过轨迹
+  const curSample=getCurrentSample();
+  if(!curSample)return;
+  const curH=Math.max(curSample.h_km,0);
+
+  ctx.save();
+  ctx.strokeStyle='rgba(255,120,30,0.2)';
+  ctx.lineWidth=10;
+  ctx.lineCap='round';
+  ctx.beginPath();
+  if(curH>=ENTRY_ALT){
+    const above=curH-ENTRY_ALT;
+    const curX=g.entryX - above*g.cot*g.scale;
+    const curY=altToY(curH);
+    ctx.moveTo(curX, curY);
+    ctx.lineTo(g.entryX, g.entryY);
+    ctx.quadraticCurveTo(g.ctrlX, g.ctrlY, g.impactX, g.impactY);
+  }else{
+    const t=bezierTFromH(curH);
+    const steps=Math.ceil(t*40);
+    ctx.moveTo(g.spaceX, g.spaceY);
+    ctx.lineTo(g.entryX, g.entryY);
+    for(let i=1;i<=steps;i++){
+      const tt=i/steps*t;
+      const p=bezierPos(tt, g.entryX, g.entryY, g.ctrlX, g.ctrlY, g.impactX, g.impactY);
+      ctx.lineTo(p.x, p.y);
+    }
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.save();
+  ctx.strokeStyle='rgba(255,180,80,0.95)';
+  ctx.lineWidth=3;
+  ctx.lineCap='round';
+  ctx.beginPath();
+  if(curH>=ENTRY_ALT){
+    const above=curH-ENTRY_ALT;
+    const curX=g.entryX - above*g.cot*g.scale;
+    const curY=altToY(curH);
+    ctx.moveTo(curX, curY);
+    ctx.lineTo(g.entryX, g.entryY);
+    ctx.quadraticCurveTo(g.ctrlX, g.ctrlY, g.impactX, g.impactY);
+  }else{
+    const t=bezierTFromH(curH);
+    const steps=Math.ceil(t*40);
+    ctx.moveTo(g.spaceX, g.spaceY);
+    ctx.lineTo(g.entryX, g.entryY);
+    for(let i=1;i<=steps;i++){
+      const tt=i/steps*t;
+      const p=bezierPos(tt, g.entryX, g.entryY, g.ctrlX, g.ctrlY, g.impactX, g.impactY);
+      ctx.lineTo(p.x, p.y);
+    }
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  // 陨石头部光晕
+  const mp=meteorPathPos(curH);
+  const glow=ctx.createRadialGradient(mp.x,mp.y,0,mp.x,mp.y,22);
+  glow.addColorStop(0,'rgba(255,220,120,0.85)');glow.addColorStop(1,'rgba(255,150,40,0)');
+  ctx.fillStyle=glow;ctx.beginPath();ctx.arc(mp.x,mp.y,22,0,6.28);ctx.fill();
+}
+function getCurrentSample(){
+  if(ANIM.samples.length===0)return null;
+  if(ANIM.t<=ANIM.samples[0].t)return ANIM.samples[0];
+  for(let i=1;i<ANIM.samples.length;i++){
+    if(ANIM.samples[i].t>=ANIM.t){
+      const a=ANIM.samples[i-1],b=ANIM.samples[i];
+      const r=(ANIM.t-a.t)/(b.t-a.t||1);
+      return{
+        h_km:a.h_km+(b.h_km-a.h_km)*r,
+        v_kms:a.v_kms+(b.v_kms-a.v_kms)*r,
+        m_kg:a.m_kg+(b.m_kg-a.m_kg)*r
+      };
+    }
+  }
+  return ANIM.samples[ANIM.samples.length-1];
+}
+
+// 陨石
+function getMeteorPos(t){
+  if(ANIM.samples.length===0)return null;
+  let h_km,v_kms,m_kg;
+  if(t<=ANIM.samples[0].t){
+    const s=ANIM.samples[0];
+    h_km=s.h_km;v_kms=s.v_kms;m_kg=s.m_kg;
+  }else{
+    let found=false;
+    for(let i=1;i<ANIM.samples.length;i++){
+      if(ANIM.samples[i].t>=t){
+        const a=ANIM.samples[i-1],b=ANIM.samples[i];
+        const r=(t-a.t)/(b.t-a.t||1);
+        h_km=a.h_km+(b.h_km-a.h_km)*r;
+        v_kms=a.v_kms+(b.v_kms-a.v_kms)*r;
+        m_kg=a.m_kg+(b.m_kg-a.m_kg)*r;
+        found=true;break;
+      }
+    }
+    if(!found){
+      const last=ANIM.samples[ANIM.samples.length-1];
+      h_km=last.h_km;v_kms=last.v_kms;m_kg=last.m_kg;
+    }
+  }
+  const p=meteorPathPos(h_km);
+  return{x:p.x,y:p.y,v_kms,m_kg,h_km};
+}
+function drawMeteoroid(time){
+  if(ANIM.groundHit&&ANIM.t>(ANIM.explodeT||0))return;
+  if(ANIM.samples.length===0)return;
+  const pos=getMeteorPos(ANIM.t);if(!pos)return;
+  if(!isFinite(pos.x)||!isFinite(pos.y))return;
+  if(pos.h_km<=0&&ANIM.groundHit)return;
+  const m0=LAST_RESULT.initial.mass_kg,mR=Math.max(0.1,pos.m_kg/m0);
+  const r0=Math.max(3,Math.min(45,Math.pow(LAST_RESULT.input_echo.diameter_m, 1/3)*2.5));
+  const r=r0*Math.pow(mR,1/3);
+  const ang=parseFloat(document.getElementById('angle').value),rad=ang*Math.PI/180;
+  const tl=Math.min(70,pos.v_kms*1.8),tx=pos.x-Math.cos(rad)*tl,ty=pos.y-Math.sin(rad)*tl;
+  const tg=ctx.createLinearGradient(tx,ty,pos.x,pos.y);
+  tg.addColorStop(0,'rgba(255,80,0,0)');tg.addColorStop(0.5,'rgba(255,140,40,0.4)');tg.addColorStop(1,'rgba(255,220,120,0.95)');
+  ctx.strokeStyle=tg;ctx.lineWidth=r*1.6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(pos.x,pos.y);ctx.stroke();
+  const gg=ctx.createRadialGradient(pos.x,pos.y,0,pos.x,pos.y,r*3);
+  gg.addColorStop(0,'rgba(255,200,100,0.5)');gg.addColorStop(0.5,'rgba(255,120,30,0.2)');gg.addColorStop(1,'rgba(255,80,0,0)');
+  ctx.fillStyle=gg;ctx.beginPath();ctx.arc(pos.x,pos.y,r*3,0,6.28);ctx.fill();
+  const pu=1+0.08*Math.sin(time*0.01);
+  ctx.fillStyle='#ffa040';ctx.beginPath();ctx.arc(pos.x,pos.y,r*pu,0,6.28);ctx.fill();
+  ctx.strokeStyle='rgba(255,240,200,0.8)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.fillStyle='rgba(255,255,240,0.9)';ctx.beginPath();ctx.arc(pos.x-r*0.3,pos.y-r*0.3,r*0.35,0,6.28);ctx.fill();
+}
+
+// 所有粒子/效果
+function drawAllEffects(time){
+  // 爆炸粒子
+  for(const p of ANIM.particles){
+    const a=Math.max(0,p.life);ctx.save();ctx.globalAlpha=a;
+    ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,6.28);ctx.fill();
+    const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*3);
+    g.addColorStop(0,hexToRgba(p.color,a*0.5));g.addColorStop(1,hexToRgba(p.color,0));
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,p.size*3,0,6.28);ctx.fill();ctx.restore();
+  }
+  // 碎片
+  for(const d of ANIM.debris){
+    const a=clamp(d.life,0,1);ctx.save();ctx.translate(d.x,d.y);ctx.rotate(d.rot);ctx.globalAlpha=a;
+    ctx.fillStyle='#8a7560';ctx.fillRect(-d.size/2,-d.size/2,d.size,d.size*0.6);
+    ctx.strokeStyle='rgba(60,50,40,0.8)';ctx.lineWidth=0.5;ctx.strokeRect(-d.size/2,-d.size/2,d.size,d.size*0.6);ctx.restore();
+  }
+  // 尘云/蒸汽
+  for(const d of ANIM.dustClouds){
+    const a=clamp(d.life,0,1);ctx.save();ctx.globalAlpha=a*0.6;
+    const g=ctx.createRadialGradient(d.x,d.y,0,d.x,d.y,d.size);
+    g.addColorStop(0,d.color);g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(d.x,d.y,d.size,0,6.28);ctx.fill();ctx.restore();
+  }
+  // 火焰（白→黄→橙→红，模拟黑体辐射）
+  for(const f of ANIM.firePatches){
+    const a=clamp(f.life*f.temp,0,1);ctx.save();ctx.globalAlpha=a;
+    const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.size*2);
+    g.addColorStop(0,'rgba(255,255,220,0.9)');g.addColorStop(0.3,'rgba(255,180,60,0.7)');
+    g.addColorStop(0.7,'rgba(255,80,0,0.3)');g.addColorStop(1,'rgba(255,50,0,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(f.x,f.y,f.size*2,0,6.28);ctx.fill();ctx.restore();
+  }
+  // 烟雾柱（灰褐色，向上扩散）
+  for(const s of ANIM.smokeColumns){
+    const a=clamp(s.life*0.5,0,1);ctx.save();ctx.globalAlpha=a;
+    const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.size);
+    g.addColorStop(0,'rgba(80,75,70,0.5)');g.addColorStop(1,'rgba(40,38,35,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(s.x,s.y,s.size,0,6.28);ctx.fill();ctx.restore();
+  }
+  // 地裂
+  for(const c of ANIM.groundCracks){
+    const a=clamp(c.life,0,1);ctx.save();ctx.globalAlpha=a;
+    ctx.strokeStyle='rgba(40,30,20,0.9)';ctx.lineWidth=2;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(c.x1,c.y1);ctx.lineTo(c.x2,c.y2);ctx.stroke();
+    const mx=(c.x1+c.x2)/2,my=(c.y1+c.y2)/2,bl=(c.x2-c.x1)*0.3;
+    ctx.strokeStyle='rgba(60,45,30,0.6)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(mx,my);ctx.lineTo(mx+bl*0.7,my+bl*0.3);ctx.stroke();ctx.restore();
+  }
+}
+
+// 爆炸
+function drawExplosion(time){
+  if(!ANIM.groundHit)return;
+  const ex=ANIM.expX,ey=ANIM.expY;
+  if(ex===null||ex===undefined)return;
+  // 闪光
+  const fl=ANIM.shockwaves.find(s=>s.type==='flash');
+  if(fl&&fl.r>0){
+    const a=fl.life*0.3;
+    const g=ctx.createRadialGradient(ex,ey,0,ex,ey,fl.r);
+    g.addColorStop(0,`rgba(255,240,180,${a*0.8})`);g.addColorStop(0.3,`rgba(255,150,50,${a*0.5})`);
+    g.addColorStop(0.7,`rgba(255,80,20,${a*0.2})`);g.addColorStop(1,'rgba(255,50,0,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(ex,ey,fl.r,0,6.28);ctx.fill();
+  }
+  // 热辐射
+  const he=ANIM.shockwaves.find(s=>s.type==='heat');
+  if(he&&he.r>0){
+    ctx.save();const g=ctx.createRadialGradient(ex,ey,he.r*0.5,ex,ey,he.r);
+    g.addColorStop(0,`rgba(255,220,150,${he.life*0.3})`);g.addColorStop(1,'rgba(255,200,100,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(ex,ey,he.r,0,6.28);ctx.fill();ctx.restore();
+  }
+  // 爆炸核心光球（脉动）
+  const pr=10+4*Math.sin(time*0.008);
+  const cg=ctx.createRadialGradient(ex,ey,0,ex,ey,pr*2);
+  cg.addColorStop(0,'rgba(255,255,230,0.95)');cg.addColorStop(0.3,'rgba(255,220,150,0.7)');
+  cg.addColorStop(0.7,'rgba(255,140,50,0.3)');cg.addColorStop(1,'rgba(255,80,0,0)');
+  ctx.fillStyle=cg;ctx.beginPath();ctx.arc(ex,ey,pr*2,0,6.28);ctx.fill();
+}
+
+// ============== 陨石坑渲染（下半圆弧碗状结构） ==============
+const CRATER_MAX_PX=300;
+function craterRadiusPx(diameter_km){
+  return clamp(diameter_km*CITY_SCALE*DAMAGE_VIS, 4, CRATER_MAX_PX);
+}
+
+function drawCrater(x, y, size){
+  if(size<4)return;
+  const dx=x-W/2, dy=y-H*0.5;
+  const dist=Math.sqrt(dx*dx+dy*dy);
+  const maxR=Math.min(W,H)*0.45;
+  if(dist>maxR*1.1)return;
+  const edgeFactor=clamp(dist/maxR, 0, 1);
+  const vertSquash=1-clamp(edgeFactor*0.8, 0, 0.65);
+  const rx=size;
+  const ry=size*vertSquash;
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle='#000000';
+  ctx.beginPath();
+  ctx.moveTo(-rx, 0);
+  ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawCraters(time){
+  if(!ANIM.craters||ANIM.craters.length===0)return;
+  for(const c of ANIM.craters){
+    const age=ANIM.t-c.bornT;
+    if(age<0)continue;
+    const r=craterRadiusPx(c.diameter_km);
+    if(r<4)continue;
+    if(c.x==null)continue;
+    drawCrater(c.x, c.y, r);
+  }
+}
+
+// 灾害范围
+function drawDamageRanges(){
+  if(!ANIM.groundHit||!LAST_RESULT)return;
+  const ex=ANIM.expX,ey=ANIM.expY;
+  const sh=LAST_RESULT.shockwave;
+  const sw=ANIM.shockwaves.find(s=>s.type==='shock');
+  const p=sw?(sw.r/sw.max):1;
+  const ep=1-Math.pow(1-Math.min(p,1),0.6);
+  // 3个圈，标签紧贴圆环上方
+  function ring(r_km,color,label,fill,angle){
+    let r_px=r_km*CITY_SCALE*DAMAGE_VIS*ep;
+    if(r_km>0&&r_px<8)r_px=8;  // 最小可见半径，确保小撞击可见
+    if(r_px<2)return;
+    ctx.save();
+    ctx.fillStyle=fill;ctx.beginPath();ctx.arc(ex,ey,r_px,0,6.28);ctx.fill();
+    ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();
+    // 标签位置：圆环边缘点
+    const lx=ex+Math.cos(angle)*r_px;
+    const ly=ey+Math.sin(angle)*r_px;
+    const text=label+' '+r_km.toFixed(1)+' 千米';
+    ctx.font='bold 11px "Microsoft YaHei"';
+    const tw=ctx.measureText(text).width;
+    // 标签居中对齐到圆环点，向上偏移5px
+    ctx.textAlign='center';ctx.textBaseline='bottom';
+    // 黑色背景框
+    ctx.fillStyle='rgba(0,0,0,0.75)';
+    ctx.fillRect(lx-tw/2-4,ly-18,tw+8,16);
+    // 文字
+    ctx.fillStyle=color;
+    ctx.shadowColor='rgba(0,0,0,0.9)';ctx.shadowBlur=3;
+    ctx.fillText(text,lx,ly-4);
+    ctx.shadowBlur=0;ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.restore();
+  }
+  // 3个圈：核心区(右上)、次级区(右下)、外围区(左侧)
+  ring(sh.core_radius_km,'#ff4444','核心区','rgba(255,40,40,0.15)',-Math.PI/4);
+  ring(sh.secondary_radius_km,'#ffa94d','次级区','rgba(255,150,50,0.08)',Math.PI/6);
+  ring(sh.outer_radius_km,'#ff6b6b','外围区','rgba(255,80,80,0.05)',Math.PI*0.85);
+  // 注：陨石坑已由 drawCraters 独立渲染，此处不再重复绘制
+}
+
+// HUD
+function drawHUD(time){
+  if(!LAST_RESULT)return;
+  const pos=getMeteorPos(ANIM.t);
+  const hudW=220,hudH=90;
+  ctx.save();
+  ctx.fillStyle='rgba(10,15,22,0.85)';ctx.strokeStyle='rgba(88,166,255,0.3)';ctx.lineWidth=1;
+  roundRect(ctx,12,12,hudW,hudH,6);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#58a6ff';ctx.font='bold 11px "Microsoft YaHei"';ctx.fillText('⚡ 实时状态',22,28);
+  ctx.fillStyle='#30363d';ctx.fillRect(22,34,hudW-20,1);
+  ctx.font='11px Consolas,monospace';
+  if(pos){
+    ctx.fillStyle='#8b949e';ctx.fillText('高度',22,50);
+    ctx.fillStyle='#58a6ff';ctx.fillText(`${pos.h_km.toFixed(1)} 千米`,80,50);
+    ctx.fillStyle='#8b949e';ctx.fillText('速度',22,66);
+    ctx.fillStyle='#3fb950';ctx.fillText(`${pos.v_kms.toFixed(2)} 千米每秒`,80,66);
+    ctx.fillStyle='#8b949e';ctx.fillText('质量',22,82);
+    ctx.fillStyle='#d2a8ff';ctx.fillText(`${fmt(pos.m_kg)} 千克`,80,82);
+  }
+  ctx.fillStyle='#6e7681';ctx.fillText(`${ANIM.t.toFixed(1)} / ${ANIM.totalAnimTime.toFixed(1)} s`,150,82);
+  // 进度条
+  const bx=12,by=hudH+20,bw=hudW,bh=4;
+  ctx.fillStyle='#21262d';ctx.fillRect(bx,by,bw,bh);
+  const pg=Math.min(ANIM.t/ANIM.totalAnimTime,1);
+  const bg=ctx.createLinearGradient(bx,0,bx+bw,0);
+  bg.addColorStop(0,'#58a6ff');bg.addColorStop(1,'#3fb950');
+  ctx.fillStyle=bg;ctx.fillRect(bx,by,bw*pg,bh);
+  ctx.restore();
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+
+// ============== 启动 ==============
+// 确保DOM完全加载后再初始化画布
+window.addEventListener('load',()=>{
+  setTimeout(()=>{resizeCanvas();updateLabels();runSim();},100);
+});
+
+// ============== AI 功能 ==============
+let AI = { narrative: '' };
+
+function aiLoading(id, text='AI 思考中...') {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.classList.remove('done');
+  el.classList.add('show','loading');
+}
+
+// 逐字打字机效果：模拟 AI 实时生成
+const _typewriterTimers = {};
+function aiShow(id, content) {
+  const el = document.getElementById(id);
+  el.classList.remove('loading','done');
+  el.classList.add('show');
+  if (_typewriterTimers[id]) { clearTimeout(_typewriterTimers[id]); delete _typewriterTimers[id]; }
+  el.textContent = '';
+
+  let i = 0;
+  const baseSpeed = 35;   // 基础速度 ms/字
+  const punctDelay = 150; // 标点处额外延迟 ms
+
+  function typeStep() {
+    if (i >= content.length) {
+      clearTimeout(_typewriterTimers[id]);
+      delete _typewriterTimers[id];
+      el.classList.add('done');
+      return;
+    }
+    const ch = content[i];
+    el.textContent += ch;
+    el.scrollTop = el.scrollHeight;
+    i++;
+    // 标点/换行处放慢，模拟 AI 思考停顿
+    if (/[。！？；，、\n]/.test(ch)) {
+      _typewriterTimers[id] = setTimeout(typeStep, punctDelay);
+    } else {
+      _typewriterTimers[id] = setTimeout(typeStep, baseSpeed);
+    }
+  }
+  typeStep();
+}
+
+function aiError(id, msg) {
+  const el = document.getElementById(id);
+  if (_typewriterTimers[id]) { clearInterval(_typewriterTimers[id]); delete _typewriterTimers[id]; }
+  el.textContent = '❌ ' + msg;
+  el.classList.remove('loading','done');
+  el.classList.add('show');
+}
+
+// AI 灾害推演
+document.getElementById('narrativeBtn').addEventListener('click', () => {
+  if (!LAST_RESULT) return;
+  const btn = document.getElementById('narrativeBtn');
+  btn.disabled = true;
+  aiLoading('narrativeOutput');
+  fetch('/api/ai/narrative', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ params: getInputParams(), result: LAST_RESULT })
+  }).then(r => r.json()).then(d => {
+    setTimeout(() => {
+      if (d.error) aiError('narrativeOutput', d.error);
+      else aiShow('narrativeOutput', d.content);
+    }, 300);
+  }).catch(e => aiError('narrativeOutput', e.message))
+    .finally(() => btn.disabled = false);
+});
+
+// 获取当前输入参数
+function getInputParams() {
+  return {
+    material: document.getElementById('material').value,
+    diameter: parseFloat(document.getElementById('diameter').value),
+    velocity: parseFloat(document.getElementById('velocity').value),
+    angle: parseFloat(document.getElementById('angle').value),
+    target: '陆地',
+    depth: 0,
+    observer_distance: parseFloat(document.getElementById('observer_distance').value)
+  };
+}
+
+</script>
+</body>
+</html>
