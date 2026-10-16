@@ -219,6 +219,184 @@ def fill_template(template, result):
     return out
 
 
+# ============== 辅助文本构建 ==============
+def _build_energy_comparison(physics_init):
+    """从 physics.initial 构造趣味能量对标"""
+    fun = physics_init.get("fun_references", {})
+    tnt = physics_init.get("tnt_tons", 0)
+    parts = [f"初始TNT当量约 {_fmt_tnt(tnt)}"]
+    for name, val in fun.items():
+        if val and val > 0:
+            parts.append(f"≈ {_fmt_num(val, 1)} 颗{name}")
+    return "，".join(parts)
+
+
+# ============== DB 驱动的 AI 功能 ==============
+def generate_narrative(params, result):
+    """动态叙事：用模板填充后的文本"""
+    tmpl = lookup_template_by_result(result)
+    if not tmpl:
+        return {"content": "模板库中未找到匹配的模板。"}
+    filled = fill_template(tmpl, result)
+
+    parts = [filled["main_text"]]
+    if filled["airburst_only"]:
+        parts.append(filled["airburst_only"])
+    if filled["surface_only"]:
+        parts.append(filled["surface_only"])
+    if filled["land_extra"]:
+        parts.append(filled["land_extra"])
+
+    init = result.get("initial", {})
+    parts.append(f"📊 {_build_energy_comparison(init)}")
+    parts.append(f"🎬 {filled['visual_cue']}")
+
+    return {"content": "\n\n".join(parts)}
+
+
+def generate_fun_references(result):
+    """趣味对标：基于 physics.initial 实时计算"""
+    init = result.get("initial", {})
+    if not init:
+        return {"content": "缺少物理仿真数据。"}
+    return {"content": _build_energy_comparison(init)}
+
+
+def generate_disaster_analysis(result):
+    """灾害分析：模板 + physics 完整数据"""
+    tmpl = lookup_template_by_result(result)
+    if not tmpl:
+        return {"content": "模板库中未找到匹配的模板。"}
+    filled = fill_template(tmpl, result)
+
+    init = result.get("initial", {})
+    release = result.get("release", {})
+    shock = result.get("shockwave", {})
+    thermal = result.get("thermal", {})
+    crater_info = result.get("crater", {})
+
+    energy_cmp = _build_energy_comparison(init)
+    crater_d = crater_info.get("crater_diameter_km", 0)
+    if crater_d and crater_d > 0:
+        crater_txt = f"撞击坑直径约 {_fmt_num(crater_d)} km"
+    else:
+        crater_txt = "空爆或烧毁模式，未形成撞击坑"
+
+    parts = []
+    parts.append(f"## 灾害分析报告\n")
+    parts.append(f"**灾害等级：{filled['disaster_title']}**（{filled['level']}）\n")
+    parts.append(f"### 撞击能量\n{energy_cmp}")
+    parts.append(f"- 初始动能：{_fmt_num(init.get('kinetic_energy_j', 0))} J")
+    parts.append(f"- 释放能量：{_fmt_num(release.get('energy_j', 0))} J（TNT {_fmt_tnt(release.get('tnt_tons', 0))}）\n")
+    parts.append(f"### 撞击坑\n{crater_txt}\n")
+    parts.append(f"### 影响范围")
+    parts.append(f"- 核心摧毁区半径：{_fmt_num(shock.get('core_radius_km', 0))} km")
+    parts.append(f"- 次级坍塌区：{_fmt_num(shock.get('secondary_radius_km', 0))} km")
+    parts.append(f"- 外围玻璃碎裂区：{_fmt_num(shock.get('outer_radius_km', 0))} km")
+    parts.append(f"- 火球半径：{_fmt_num(thermal.get('fireball_radius_km', 0))} km")
+    parts.append(f"- 三度烧伤半径：{_fmt_num(thermal.get('burn_radius_km', 0))} km\n")
+    parts.append(f"### AI 分析\n{filled['main_text']}")
+    if filled["airburst_only"]:
+        parts.append(filled["airburst_only"])
+    if filled["surface_only"]:
+        parts.append(filled["surface_only"])
+    if filled["land_extra"]:
+        parts.append(filled["land_extra"])
+    parts.append(f"\n### 适用场景\n{filled['warning_note']}")
+
+    return {"content": "\n".join(parts)}
+
+
+def answer_science_question(question, context=None):
+    """科学问答：基于模板与 physics 数据"""
+    if not context:
+        return {"content": f"请先运行一次模拟，我可以基于当前撞击参数回答问题。\n\n您的问题：{question}"}
+
+    # context 是 simulation 结果
+    result = context
+    tmpl = lookup_template_by_result(result)
+    if not tmpl:
+        return {"content": "模板库中未找到匹配的模板。"}
+    filled = fill_template(tmpl, result)
+
+    init = result.get("initial", {})
+    release = result.get("release", {})
+    shock = result.get("shockwave", {})
+    thermal = result.get("thermal", {})
+    crater_info = result.get("crater", {})
+
+    q = question
+    if any(k in q for k in ["坑", "crater", "撞击坑", "直径"]):
+        d = crater_info.get("crater_diameter_km", 0)
+        return {"content": f"关于撞击坑：直径约 {_fmt_num(d)} km"}
+    elif any(k in q for k in ["能量", "energy", "威力", "TNT", "当量"]):
+        return {"content": f"关于撞击能量：\n{_build_energy_comparison(init)}\n释放能量：{_fmt_tnt(release.get('tnt_tons', 0))} TNT"}
+    elif any(k in q for k in ["范围", "range", "破坏", "影响", "半径"]):
+        return {"content": f"关于破坏范围：\n核心摧毁区 {_fmt_num(shock.get('core_radius_km', 0))} km，"
+                          f"外围 {_fmt_num(shock.get('outer_radius_km', 0))} km，"
+                          f"火球 {_fmt_num(thermal.get('fireball_radius_km', 0))} km，"
+                          f"烧伤 {_fmt_num(thermal.get('burn_radius_km', 0))} km"}
+    elif any(k in q for k in ["等级", "level", "严重", "危险"]):
+        return {"content": f"当前灾害等级：{filled['disaster_title']}（{filled['level']}）\n\n{filled['main_text']}"}
+    else:
+        return {"content": f"{filled['main_text']}\n\n📊 {_build_energy_comparison(init)}"}
+
+
+def parse_natural_language(text):
+    """自然语言解析：关键词匹配"""
+    result = {
+    'material': '岩石陨石',
+    'diameter': 100,
+    'velocity': 25,
+    'angle': 45,
+    'target': '陆地',
+    'depth': 4000,
+    'observer_distance': 50
+    }
+
+    if any(k in text for k in ['冰', '彗星', 'ice', 'comet']):
+        result['material'] = '冰彗星'
+    elif any(k in text for k in ['铁', 'iron', 'metal']):
+        result['material'] = '铁陨石'
+    elif any(k in text for k in ['岩', 'rock', 'stone']):
+        result['material'] = '岩石陨石'
+
+    m = re.search(r'(\d+)\s*(m|米|km|千米|公里)', text)
+    if m:
+        val = int(m.group(1))
+        unit = m.group(2)
+        if unit in ('km', '千米', '公里'):
+            val *= 1000
+        result['diameter'] = max(5, min(5000, val))
+
+    m = re.search(r'(\d+(?:\.\d+)?)\s*(km/s|km|千米.*秒|马赫)', text)
+    if m:
+        result['velocity'] = max(12, min(70, float(m.group(1))))
+
+    m = re.search(r'(\d+)\s*(°|度|角)', text)
+    if m:
+        result['angle'] = max(5, min(90, int(m.group(1))))
+
+    if any(k in text for k in ['通古斯', 'tunguska']):
+        result['material'] = '岩石陨石'
+        result['diameter'] = 60
+        result['velocity'] = 27
+        result['angle'] = 45
+    elif any(k in text for k in ['希克苏鲁伯', 'chicxulub', '恐龙', '灭绝']):
+        result['material'] = '岩石陨石'
+        result['diameter'] = 10000
+        result['velocity'] = 20
+        result['angle'] = 45
+    elif any(k in text for k in ['小', 'small', '微型']):
+        if result['diameter'] == 100:
+            result['diameter'] = 20
+    elif any(k in text for k in ['大', 'big', 'large', '巨型']):
+        if result['diameter'] == 100:
+            result['diameter'] = 500
+
+    return {'content': result}
+
+
 # ============== 路由 ==============
 @app.route('/')
 def index():
@@ -231,6 +409,45 @@ def api_simulate():
     params["target"] = "陆地"
     result = run_simulation(params)
     return jsonify(result)
+
+
+@app.route('/api/ai/narrative', methods=['POST'])
+def api_narrative():
+    """动态叙事"""
+    data = request.get_json(force=True)
+    return jsonify(generate_narrative(data.get('params', {}), data.get('result', {})))
+
+
+@app.route('/api/ai/fun-refs', methods=['POST'])
+def api_fun_refs():
+    """趣味对标"""
+    data = request.get_json(force=True)
+    result = data.get('result', {})
+    return jsonify(generate_fun_references(result))
+
+
+@app.route('/api/ai/parse-command', methods=['POST'])
+def api_parse_command():
+    """自然语言解析"""
+    data = request.get_json(force=True)
+    text = data.get('text', '')
+    return jsonify(parse_natural_language(text))
+
+
+@app.route('/api/ai/qa', methods=['POST'])
+def api_qa():
+    """科学问答"""
+    data = request.get_json(force=True)
+    question = data.get('question', '')
+    context = data.get('context', None)
+    return jsonify(answer_science_question(question, context))
+
+
+@app.route('/api/ai/disaster', methods=['POST'])
+def api_disaster():
+    """灾害分析"""
+    data = request.get_json(force=True)
+    return jsonify(generate_disaster_analysis(data.get('result', {})))
 
 
 @app.route('/api/db-info', methods=['GET'])

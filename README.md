@@ -8,6 +8,7 @@
 - **灾害等级评估**：按释放能量划分 L1–L5 五个等级，输出空爆高度、坑径、各距离观测点的破坏效果
 - **真实事件模板库**：内置 132 条历史陨石事件模板（通古斯、车里雅宾斯克等），按能量/模式/材质自动匹配"同类事件"参照
 - **趣味科普**：能量当量换算（对比广岛原子弹、地震震级等）、口语化灾害叙述
+- **AI 增强（可选）**：接入 DeepSeek API，支持自然语言输入（"一颗 100 米的铁陨石以 30km/s 撞海洋会怎样"）、科学问答、深度灾害分析
 - **两种运行形态**：Flask Web 版 + 零依赖单文件离线 HTML 版
 
 ## 快速开始
@@ -26,12 +27,21 @@ python appV2.0.py
 
 直接双击打开 `陨石/JAVA版html.html`，无需 Python 环境，全部计算在浏览器本地完成。
 
+### 启用 AI 功能（可选）
+
+物理模拟本身不需要任何密钥。如需 AI 问答/自然语言解析功能：
+
+1. 复制 `陨石/Aug12/config.example.json` 为 `陨石/final/v3.0/config.json`
+2. 将其中占位符替换为你自己的 [DeepSeek API Key](https://platform.deepseek.com/)
+
+`config.json` 已被 `.gitignore` 排除，密钥不会被提交。
+
 ## 项目结构
 
 ```
 陨石/
 ├── final/v3.0/              # 发布版（Flask Web 应用）
-│   ├── appV2.0.py           # Web 服务、模板匹配
+│   ├── appV2.0.py           # Web 服务、AI 接口、模板匹配
 │   ├── simulation.py        # 仿真主流程调度
 │   ├── physics/             # 物理引擎
 │   │   ├── atmosphere.py    # 大气减速与加热
@@ -52,6 +62,11 @@ python appV2.0.py
 | 端点 | 方法 | 说明 |
 |------|------|------|
 | `/api/simulate` | POST | 执行物理仿真，返回模式/等级/灾害数据 |
+| `/api/ai/parse-command` | POST | 自然语言 → 仿真参数 |
+| `/api/ai/narrative` | POST | 生成事件叙事 |
+| `/api/ai/fun-refs` | POST | 能量当量趣味参照 |
+| `/api/ai/qa` | POST | 陨石科学问答 |
+| `/api/ai/disaster` | POST | 深度灾害分析 |
 | `/api/db-info` | GET | 模板库信息 |
 
 ## 技术栈
