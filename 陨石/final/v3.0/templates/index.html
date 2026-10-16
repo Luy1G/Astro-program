@@ -144,33 +144,7 @@
   .tnt-bar .bar { height:6px; background:#21262d; border-radius:3px; margin-top:4px; overflow:hidden; }
   .tnt-bar .bar-fill { height:100%; border-radius:3px; transition:width 0.3s; }
 
-  /* ============== AI 面板样式 ============== */
-  .ai-panel { background:linear-gradient(135deg,#0d1f2d,#1a0f28); border:1px solid #3a2a5c; border-radius:8px; padding:14px; margin-bottom:12px; }
-  .ai-panel .ai-title { font-size:12px; color:#d2a8ff; margin:0 0 10px 0; display:flex; align-items:center; gap:6px; }
-  .ai-panel .ai-title::before { content:'🤖'; }
-  .ai-btn { padding:8px 14px; background:linear-gradient(135deg,#6f42c1,#563d7c); color:#fff; border:none; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600; width:100%; margin-bottom:8px; transition:all .2s; }
-  .ai-btn:hover { background:linear-gradient(135deg,#8957e5,#6f42c1); box-shadow:0 0 12px rgba(111,66,193,0.4); }
-  .ai-btn:disabled { opacity:0.5; cursor:not-allowed; }
-  .ai-output { background:#161b22; border-radius:6px; padding:10px; font-size:12px; color:#c9d1d9; line-height:1.7; max-height:200px; overflow-y:auto; display:none; white-space:pre-wrap; }
-  .ai-output.show { display:block; }
-  .ai-output.loading { color:#8b949e; font-style:italic; }
-  .ai-output::after { content:'▋'; color:#58a6ff; animation:blink 0.8s steps(2) infinite; }
-  .ai-output.done::after { content:''; }
-  @keyframes blink { 50% { opacity:0; } }
-
-  /* AI 灾害推演面板增强样式 */
-  .ai-narrative-panel { background:linear-gradient(135deg,#0d1f2d,#1a0f28); border:1px solid rgba(137,87,229,0.4); border-radius:10px; padding:16px; box-shadow:0 4px 20px rgba(111,66,193,0.15); }
-  .ai-narrative-panel .ai-title { font-size:14px; color:#d2a8ff; margin:0 0 12px 0; padding-bottom:8px; border-bottom:1px solid rgba(137,87,229,0.2); }
-  .ai-narrative-output { background:linear-gradient(180deg,#0d1117,#161b22); border:1px solid #21262d; border-radius:8px; padding:16px; font-size:13px; color:#c9d1d9; line-height:2.0; max-height:380px; overflow-y:auto; white-space:pre-wrap; word-break:break-word; margin-bottom:12px; box-shadow:inset 0 1px 3px rgba(0,0,0,0.3); }
-  .ai-narrative-output::-webkit-scrollbar { width:6px; }
-  .ai-narrative-output::-webkit-scrollbar-track { background:#0d1117; border-radius:3px; }
-  .ai-narrative-output::-webkit-scrollbar-thumb { background:#30363d; border-radius:3px; }
-  .ai-narrative-output::-webkit-scrollbar-thumb:hover { background:#484f58; }
-  .ai-narrative-output.loading { color:#8b949e; font-style:italic; }
-  .ai-paragraph { opacity:0; transition:opacity 0.5s ease; margin-bottom:10px; padding-left:10px; border-left:2px solid rgba(137,87,229,0.3); }
-  .ai-paragraph:last-child { margin-bottom:0; }
-
-</style>
+  </style>
 </head>
 <body>
 <h1>陆地陨石撞击模拟器 <span>v3.0</span></h1>
@@ -346,13 +320,7 @@
     <div class="level-box info" id="obsDamage" style="text-align:center;font-size:11px;">—</div>
   </div>
   
-  <div id="aiFeatureArea" style="display:none;">
-    <div class="ai-panel ai-narrative-panel">
-      <div class="ai-title">🎯 AI 灾害推演</div>
-      <div id="narrativeOutput" class="ai-output ai-narrative-output">点击按钮生成推演…</div>
-      <button id="narrativeBtn" class="ai-btn">✨ 生成推演报告</button>
-    </div>
-  </div>
+  
 </div>
 
 <!-- 底部悬浮动画控制栏 -->
@@ -806,7 +774,7 @@ function runSim(){
     observer_distance:parseFloat(document.getElementById('observer_distance').value)};
   document.getElementById('animStatus').textContent='计算中…';
   fetch('/api/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-    .then(r=>r.json()).then(d=>{LAST_RESULT=d;renderResults(d);setupAnimation(d);playAnim();document.getElementById("aiFeatureArea").style.display="block";})
+    .then(r=>r.json()).then(d=>{LAST_RESULT=d;renderResults(d);setupAnimation(d);playAnim();})
     .catch(e=>{document.getElementById('animStatus').textContent='错误: '+e.message;});
 }
 function renderResults(d){
@@ -1747,90 +1715,6 @@ function roundRect(ctx,x,y,w,h,r){
 window.addEventListener('load',()=>{
   setTimeout(()=>{resizeCanvas();updateLabels();runSim();},100);
 });
-
-// ============== AI 功能 ==============
-let AI = { narrative: '' };
-
-function aiLoading(id, text='AI 思考中...') {
-  const el = document.getElementById(id);
-  el.textContent = text;
-  el.classList.remove('done');
-  el.classList.add('show','loading');
-}
-
-// 逐字打字机效果：模拟 AI 实时生成
-const _typewriterTimers = {};
-function aiShow(id, content) {
-  const el = document.getElementById(id);
-  el.classList.remove('loading','done');
-  el.classList.add('show');
-  if (_typewriterTimers[id]) { clearTimeout(_typewriterTimers[id]); delete _typewriterTimers[id]; }
-  el.textContent = '';
-
-  let i = 0;
-  const baseSpeed = 35;   // 基础速度 ms/字
-  const punctDelay = 150; // 标点处额外延迟 ms
-
-  function typeStep() {
-    if (i >= content.length) {
-      clearTimeout(_typewriterTimers[id]);
-      delete _typewriterTimers[id];
-      el.classList.add('done');
-      return;
-    }
-    const ch = content[i];
-    el.textContent += ch;
-    el.scrollTop = el.scrollHeight;
-    i++;
-    // 标点/换行处放慢，模拟 AI 思考停顿
-    if (/[。！？；，、\n]/.test(ch)) {
-      _typewriterTimers[id] = setTimeout(typeStep, punctDelay);
-    } else {
-      _typewriterTimers[id] = setTimeout(typeStep, baseSpeed);
-    }
-  }
-  typeStep();
-}
-
-function aiError(id, msg) {
-  const el = document.getElementById(id);
-  if (_typewriterTimers[id]) { clearInterval(_typewriterTimers[id]); delete _typewriterTimers[id]; }
-  el.textContent = '❌ ' + msg;
-  el.classList.remove('loading','done');
-  el.classList.add('show');
-}
-
-// AI 灾害推演
-document.getElementById('narrativeBtn').addEventListener('click', () => {
-  if (!LAST_RESULT) return;
-  const btn = document.getElementById('narrativeBtn');
-  btn.disabled = true;
-  aiLoading('narrativeOutput');
-  fetch('/api/ai/narrative', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ params: getInputParams(), result: LAST_RESULT })
-  }).then(r => r.json()).then(d => {
-    setTimeout(() => {
-      if (d.error) aiError('narrativeOutput', d.error);
-      else aiShow('narrativeOutput', d.content);
-    }, 300);
-  }).catch(e => aiError('narrativeOutput', e.message))
-    .finally(() => btn.disabled = false);
-});
-
-// 获取当前输入参数
-function getInputParams() {
-  return {
-    material: document.getElementById('material').value,
-    diameter: parseFloat(document.getElementById('diameter').value),
-    velocity: parseFloat(document.getElementById('velocity').value),
-    angle: parseFloat(document.getElementById('angle').value),
-    target: '陆地',
-    depth: 0,
-    observer_distance: parseFloat(document.getElementById('observer_distance').value)
-  };
-}
 
 </script>
 </body>
