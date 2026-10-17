@@ -2421,23 +2421,26 @@ function drawHUD(time){
   if(!LAST_RESULT)return;
   const pos=getMeteorPos(ANIM.t);
   const hudW=220,hudH=90;
+  // 水平居中于左右面板之间的空档，垂直置于标题栏下方，避免与输入面板重叠
+  const hudX=Math.max((W-hudW)/2,12);
+  const hudY=56;
   ctx.save();
   ctx.fillStyle='rgba(10,15,22,0.85)';ctx.strokeStyle='rgba(88,166,255,0.3)';ctx.lineWidth=1;
-  roundRect(ctx,12,12,hudW,hudH,6);ctx.fill();ctx.stroke();
-  ctx.fillStyle='#58a6ff';ctx.font='bold 11px "Microsoft YaHei"';ctx.fillText('⚡ 实时状态',22,28);
-  ctx.fillStyle='#30363d';ctx.fillRect(22,34,hudW-20,1);
+  roundRect(ctx,hudX,hudY,hudW,hudH,6);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#58a6ff';ctx.font='bold 11px "Microsoft YaHei"';ctx.fillText('⚡ 实时状态',hudX+10,hudY+16);
+  ctx.fillStyle='#30363d';ctx.fillRect(hudX+10,hudY+22,hudW-20,1);
   ctx.font='11px Consolas,monospace';
   if(pos){
-    ctx.fillStyle='#8b949e';ctx.fillText('高度',22,50);
-    ctx.fillStyle='#58a6ff';ctx.fillText(`${pos.h_km.toFixed(1)} 千米`,80,50);
-    ctx.fillStyle='#8b949e';ctx.fillText('速度',22,66);
-    ctx.fillStyle='#3fb950';ctx.fillText(`${pos.v_kms.toFixed(2)} 千米每秒`,80,66);
-    ctx.fillStyle='#8b949e';ctx.fillText('质量',22,82);
-    ctx.fillStyle='#d2a8ff';ctx.fillText(`${fmt(pos.m_kg)} 千克`,80,82);
+    ctx.fillStyle='#8b949e';ctx.fillText('高度',hudX+10,hudY+38);
+    ctx.fillStyle='#58a6ff';ctx.fillText(`${pos.h_km.toFixed(1)} 千米`,hudX+68,hudY+38);
+    ctx.fillStyle='#8b949e';ctx.fillText('速度',hudX+10,hudY+54);
+    ctx.fillStyle='#3fb950';ctx.fillText(`${pos.v_kms.toFixed(2)} 千米每秒`,hudX+68,hudY+54);
+    ctx.fillStyle='#8b949e';ctx.fillText('质量',hudX+10,hudY+70);
+    ctx.fillStyle='#d2a8ff';ctx.fillText(`${fmt(pos.m_kg)} 千克`,hudX+68,hudY+70);
   }
-  ctx.fillStyle='#6e7681';ctx.fillText(`${ANIM.t.toFixed(1)} / ${ANIM.totalAnimTime.toFixed(1)} s`,150,82);
+  ctx.fillStyle='#6e7681';ctx.fillText(`${ANIM.t.toFixed(1)} / ${ANIM.totalAnimTime.toFixed(1)} s`,hudX+138,hudY+70);
   // 进度条
-  const bx=12,by=hudH+20,bw=hudW,bh=4;
+  const bx=hudX,by=hudY+hudH+8,bw=hudW,bh=4;
   ctx.fillStyle='#21262d';ctx.fillRect(bx,by,bw,bh);
   const pg=Math.min(ANIM.t/ANIM.totalAnimTime,1);
   const bg=ctx.createLinearGradient(bx,0,bx+bw,0);
