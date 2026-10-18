@@ -9,7 +9,7 @@
   6. 替换 fetch 调成本地函数调用
   7. 输出到 陨石/JAVA版html.html（覆盖）
 """
-import os, json
+import os, json, re
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 BUILD = os.path.join(ROOT, "Aug12", "_js_build")
@@ -49,34 +49,13 @@ js3 = js3.replace(
     ''
 )
 
-# part3: 删除整个 compute_tsunami 函数
-tsunami_fn_start = '// -------------------- tsunami: compute_tsunami --------------------'
-tsunami_fn_end = '}\n\n// -------------------- classify:'
-i1 = js3.find(tsunami_fn_start)
-i2 = js3.find(tsunami_fn_end)
-if i1 != -1 and i2 != -1:
-    js3 = js3[:i1] + js3[i2 + len('// -------------------- classify:') - len('// -------------------- classify:'):]
-    # 重新拼接，保留 classify 注释
-    js3 = js3[:i1] + '// -------------------- classify: classify_disaster + observer_damage --------------------\n' + js3[i2 + len(tsunami_fn_end):]
-
-# 重新做一次更稳定的删除：从 tsunami 注释到 classify 注释前
-# 上面可能没正确处理，重新读取并清理
-lines = js3.split('\n')
-out_lines = []
-skip = False
-for ln in lines:
-    if 'tsunami: compute_tsunami' in ln:
-        skip = True
-        continue
-    if skip:
-        # 跳过直到遇到 classify 注释或下一个 // ---- 函数
-        if ln.startswith('// -------------------- classify:') or (ln.startswith('// --------------------') and 'classify' in ln):
-            skip = False
-            out_lines.append(ln)
-            continue
-        continue
-    out_lines.append(ln)
-js3 = '\n'.join(out_lines)
+# part3: 删除整个 compute_tsunami 函数（正则一次性删除：从 tsunami 注释行到 classify 注释行之前）
+js3 = re.sub(
+    r'// -+ tsunami: compute_tsunami -+\n.*?(?=// -+ classify:)',
+    '',
+    js3,
+    flags=re.S
+)
 
 # part3: run_simulation 中删除海啸调用与字段
 js3 = js3.replace(

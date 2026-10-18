@@ -806,7 +806,15 @@ function compute_thermal(release_energy_j, ground_efficiency) {
 }
 
 // -------------------- classify: classify_disaster + observer_damage --------------------
-ion": "100m级，城市群毁灭"};
+function classify_disaster(diameter_m, tnt_tons) {
+    if (diameter_m < 20 || tnt_tons < 1e3) {
+        return {"level": "微型撞击", "description": "10m级，大气消耗，无地面损伤"};
+    }
+    if (diameter_m < 50 || tnt_tons < 1e6) {
+        return {"level": "小型灾害", "description": "20–50m，局部城市损毁"};
+    }
+    if (diameter_m < 500 || tnt_tons < 1e9) {
+        return {"level": "中型灾难", "description": "100m级，城市群毁灭"};
     }
     if (diameter_m < 2000 || tnt_tons < 1e12) {
         return {"level": "大型灾变", "description": "1km级，区域性生态崩溃"};
