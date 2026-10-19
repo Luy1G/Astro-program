@@ -90,13 +90,31 @@ function air_density(altitude_m) {
     return RHO_AIR_SEA * Math.exp(-altitude_m / SCALE_HEIGHT);
 }
 
+// ---- 五层标准大气（对流层/平流层/中间层/热层/外逸层）----
+// 标高按美国标准大气（USSA 1976）密度锚点拟合，界面处密度连续衔接
+const ATMOSPHERE_LAYERS = [
+    { name: "对流层", base: 0.0,      H: 8500.0,  rhoBase: 1.225 },
+    { name: "平流层", base: 12000.0,  H: 6710.0,  rhoBase: 0.0 },
+    { name: "中间层", base: 50000.0,  H: 7240.0,  rhoBase: 0.0 },
+    { name: "热层",   base: 85000.0,  H: 11060.0, rhoBase: 0.0 },
+    { name: "外逸层", base: 600000.0, H: 50000.0, rhoBase: 0.0 }
+];
+for (let _i = 1; _i < ATMOSPHERE_LAYERS.length; _i++) {
+    const _prev = ATMOSPHERE_LAYERS[_i - 1];
+    const _cur = ATMOSPHERE_LAYERS[_i];
+    _cur.rhoBase = _prev.rhoBase * Math.exp(-(_cur.base - _prev.base) / _prev.H);
+}
+
+function air_density_standard(altitude_m) {
+    const h = Math.max(altitude_m, 0.0);
+    let last = ATMOSPHERE_LAYERS[0];
+    for (const L of ATMOSPHERE_LAYERS) {
+        if (h < L.base) break;
+        last = L;
+    }
+    return last.rhoBase * Math.exp(-(h - last.base) / last.H);
+}
+
 function air_density_with_gradient(altitude_m) {
-    if (altitude_m < 0) {
-        altitude_m = 0.0;
-    }
-    if (altitude_m < 25000) {
-        return RHO_AIR_SEA * Math.exp(-altitude_m / 8500.0);
-    }
-    const rho_25 = RHO_AIR_SEA * Math.exp(-25000 / 8500.0);
-    return rho_25 * Math.exp(-(altitude_m - 25000) / 6000.0);
+    return air_density_standard(altitude_m);
 }
