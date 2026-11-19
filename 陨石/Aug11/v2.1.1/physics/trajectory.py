@@ -97,7 +97,8 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
 
     t = 0.0
     samples = []
-    energy_atm = 0.0          # 累积大气能量沉积 J（仅阻力做功）
+    energy_atm = 0.0          # 累积大气能量沉积 J（阻力做功 + 烧蚀质量动能）
+    energy_abl_ke = 0.0       # 其中烧蚀质量带走的动能 J
     energy_profile = []       # [(h_km, cumulative_energy_J)] 用于动画
     e_peak_dt_rate = 0.0      # 峰值能量沉积率 W
     e_peak_h = 0.0            # 峰值能量沉积高度 m
@@ -119,16 +120,24 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
         A = math.pi * r * r * pancake_mult  # 解体后横截面积放大
         q = 0.5 * rho_a * v * v             # 动压
 
-        # ───── 3. 大气能量沉积（标准算法：仅阻力做功功率 × dt）─────
-        #    P_drag = F_drag × v = ½·ρ_a·v³·C_D·A
-        #    dE = P_drag × dt
-        #    烧蚀质量损失的能量来自汽化内能 Q_abl，不计入大气冲击波能量
-        e_deposited = 0.5 * rho_a * (v ** 3) * C.DRAG_COEFFICIENT * A * dt
-        energy_atm += e_deposited
+        # ───── 3. 烧蚀率（先算 dm，能量账需要它）─────
+        #   dm/dt = -½·ρ_a·v³·C_H·A / Q_abl（仅 v > 3 km/s）
+        if v > ABLATION_SPEED_CUTOFF:
+            dm = -(rho_a * (v ** 3) * C.HEAT_TRANSFER_COEFF * A /
+                   C.ABLATION_HEAT) * dt
+        else:
+            dm = 0.0  # 暗飞行阶段，停止烧蚀
+
+        # ───── 4. 大气能量沉积 = 阻力做功 + 烧蚀质量带走的动能 ─────
+        #   烧蚀物以接近 v 的速度离开物体，随后在尾迹中热化，同样沉积在大气
+        e_drag = 0.5 * rho_a * (v ** 3) * C.DRAG_COEFFICIENT * A * dt
+        e_abl = -0.5 * v * v * dm          # dm<=0，故 e_abl>=0
+        energy_atm += e_drag + e_abl
+        energy_abl_ke += e_abl
 
         # 沿高度能量沉积峰值（找最剧烈的能量释放高度）
-        if e_deposited / dt > e_peak_dt_rate:
-            e_peak_dt_rate = e_deposited / dt
+        if (e_drag + e_abl) / dt > e_peak_dt_rate:
+            e_peak_dt_rate = (e_drag + e_abl) / dt
             e_peak_h = h
 
         # ───── 4. 解体触发判定（单次触发，杜绝重复）─────
@@ -170,13 +179,7 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
         else:
             sin_theta = 1.0
 
-        # ───── 7. 烧蚀更新（仅高速段 v > 3 km/s，模拟暗飞行阶段截止）─────
-        #  低速下气动加热不足以维持有效烧蚀，陨石进入暗飞行阶段
-        if v > ABLATION_SPEED_CUTOFF:
-            dm = -(rho_a * (v ** 3) * C.HEAT_TRANSFER_COEFF * A /
-                   C.ABLATION_HEAT) * dt
-        else:
-            dm = 0.0  # 暗飞行阶段，停止烧蚀
+        # ───── 7. 烧蚀质量已在步骤 3 计算（dm），此处不再重复 ─────
 
         # ───── 8. 高度更新（使用当前步 v_y，Forward Euler）─────
         dh = -v_y * dt   # v_y 正方向向下，dh 为负
@@ -244,8 +247,10 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
         energy_profile.append((0.0, energy_atm))
 
     # ───── 三类能量分配占比（对标 NASA 数据口径）─────
-    atm_ratio = energy_atm / initial_e_kin if initial_e_kin > 0 else 0.0
-    ground_ratio = terminal_e_kin / initial_e_kin if initial_e_kin > 0 else 0.0
+    # 分母含 200 km 处重力势能，否则重力做功会让占比超过 100%
+    initial_total_e = initial_e_kin + m0 * G0 * C.ATMOSPHERE_TOP
+    atm_ratio = energy_atm / initial_total_e if initial_total_e > 0 else 0.0
+    ground_ratio = terminal_e_kin / initial_total_e if initial_total_e > 0 else 0.0
 
     return {
         "samples": samples,
@@ -265,6 +270,7 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
         "ablation_kg": m0 - terminal_m,
         "ablation_ratio": (m0 - terminal_m) / m0 if m0 > 0 else 0.0,
         "energy_atm_j": energy_atm,
+        "energy_abl_ke_j": energy_abl_ke,
         "energy_atm_ratio": atm_ratio,
         "energy_peak_h_km": e_peak_h / 1000.0,
         "energy_profile": energy_profile,

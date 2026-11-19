@@ -627,6 +627,7 @@ function integrate_trajectory(diameter_m, material_key, velocity_kms,
     let t = 0.0;
     const samples = [];
     let energy_atm = 0.0;
+    let energy_abl_ke = 0.0;   // 烧蚀质量带走的动能（同样沉积在大气中）
     const energy_profile = [];
     let e_peak_dt_rate = 0.0;
     let e_peak_h = 0.0;
@@ -646,11 +647,22 @@ function integrate_trajectory(diameter_m, material_key, velocity_kms,
         const A = Math.PI * r * r * pancake_mult;
         const q = 0.5 * rho_a * v * v;
 
-        const e_deposited = 0.5 * rho_a * Math.pow(v, 3) * C.DRAG_COEFFICIENT * A * dt;
-        energy_atm += e_deposited;
+        // 烧蚀率（先算 dm，能量账需要它）
+        let dm = 0.0;
+        if (v > ABLATION_SPEED_CUTOFF) {
+            dm = -(rho_a * Math.pow(v, 3) * C.HEAT_TRANSFER_COEFF * A /
+                   C.ABLATION_HEAT) * dt;
+        }
 
-        if (e_deposited / dt > e_peak_dt_rate) {
-            e_peak_dt_rate = e_deposited / dt;
+        // 能量沉积 = 阻力做功 + 烧蚀质量带走的动能
+        //   烧蚀物以接近 v 的速度离开物体，随后在尾迹中热化，同样计入大气沉积
+        const e_drag = 0.5 * rho_a * Math.pow(v, 3) * C.DRAG_COEFFICIENT * A * dt;
+        const e_abl  = -0.5 * v * v * dm;    // dm <= 0，故 e_abl >= 0
+        energy_atm += e_drag + e_abl;
+        energy_abl_ke += e_abl;
+
+        if ((e_drag + e_abl) / dt > e_peak_dt_rate) {
+            e_peak_dt_rate = (e_drag + e_abl) / dt;
             e_peak_h = h;
         }
 
@@ -683,14 +695,6 @@ function integrate_trajectory(diameter_m, material_key, velocity_kms,
             sin_theta = v_y / v;
         } else {
             sin_theta = 1.0;
-        }
-
-        let dm;
-        if (v > ABLATION_SPEED_CUTOFF) {
-            dm = -(rho_a * Math.pow(v, 3) * C.HEAT_TRANSFER_COEFF * A /
-                   C.ABLATION_HEAT) * dt;
-        } else {
-            dm = 0.0;
         }
 
         const dh = -v_y * dt;
@@ -762,8 +766,10 @@ function integrate_trajectory(diameter_m, material_key, velocity_kms,
         }
     }
 
-    const atm_ratio = initial_e_kin > 0 ? energy_atm / initial_e_kin : 0.0;
-    const ground_ratio = initial_e_kin > 0 ? terminal_e_kin / initial_e_kin : 0.0;
+    // 占比分母 = 初始动能 + 200 km 重力势能；否则重力做功会让占比超过 100%
+    const initial_total_e = initial_e_kin + m0 * 9.81 * C.ATMOSPHERE_TOP;
+    const atm_ratio = initial_total_e > 0 ? energy_atm / initial_total_e : 0.0;
+    const ground_ratio = initial_total_e > 0 ? terminal_e_kin / initial_total_e : 0.0;
 
     return {
         "samples": samples,
@@ -783,6 +789,7 @@ function integrate_trajectory(diameter_m, material_key, velocity_kms,
         "ablation_kg": m0 - terminal_m,
         "ablation_ratio": m0 > 0 ? (m0 - terminal_m) / m0 : 0.0,
         "energy_atm_j": energy_atm,
+        "energy_abl_ke_j": energy_abl_ke,
         "energy_atm_ratio": atm_ratio,
         "energy_peak_h_km": e_peak_h / 1000.0,
         "energy_profile": energy_profile,
@@ -831,7 +838,8 @@ function determine_mode(trajectory_result, diameter_m, material_key) {
     } else if (triggered) {
         mode = "空爆（通古斯模式）";
         ground_efficiency = 0.85;
-        release_energy = term["e_kinetic_j"];
+        // 空爆释放的是已经沉积在大气中的能量；终端剩余动能只剩 0.1% 量级
+        release_energy = trajectory_result["energy_atm_j"];
         release_altitude_km = brk["altitude_km"];
     } else {
         mode = "大气烧毁（无地面影响）";
@@ -1713,12 +1721,12 @@ function renderResults(d){
 
   // ===== 2×2 指标网格 =====
   const massKg=d.initial.mass_kg;
-  let massDisp,massSub;
-  if(massKg>=1e9){massDisp=(massKg/1e9).toFixed(2);massSub='十亿 千克 ('+fmt(d.initial.mass_tons)+' 吨)';}
-  else if(massKg>=1e6){massDisp=(massKg/1e6).toFixed(2);massSub='百万 千克 ('+fmt(d.initial.mass_tons)+' 吨)';}
-  else if(massKg>=1e3){massDisp=(massKg/1e3).toFixed(2);massSub='千 千克 ('+fmt(d.initial.mass_tons)+' 吨)';}
-  else{massDisp=massKg.toFixed(1);massSub='千克 ('+fmt(d.initial.mass_tons)+' 吨)';}
-  document.getElementById('metricMass').innerHTML=massDisp+'<span class="mc-unit">千克</span>';
+  let massDisp,massSub,massUnit='千克';
+  if(massKg>=1e9){massDisp=(massKg/1e9).toFixed(2);massUnit='十亿千克';massSub='十亿 千克 ('+fmt(d.initial.mass_tons)+' 吨)';}
+  else if(massKg>=1e6){massDisp=(massKg/1e6).toFixed(2);massUnit='百万千克';massSub='百万 千克 ('+fmt(d.initial.mass_tons)+' 吨)';}
+  else if(massKg>=1e3){massDisp=(massKg/1e3).toFixed(2);massUnit='千千克';massSub='千 千克 ('+fmt(d.initial.mass_tons)+' 吨)';}
+  else{massDisp=massKg.toFixed(1);massUnit='千克';massSub='千克 ('+fmt(d.initial.mass_tons)+' 吨)';}
+  document.getElementById('metricMass').innerHTML=massDisp+'<span class="mc-unit">'+massUnit+'</span>';
   document.getElementById('metricMassSub').textContent=massSub;
 
   const velKms=d.input_echo.velocity_kms;
@@ -1726,12 +1734,12 @@ function renderResults(d){
   document.getElementById('metricVelSub').textContent=(velKms*3600).toFixed(0)+' 千米/时 ｜ 马赫 '+ (velKms/0.34).toFixed(0);
 
   const keJ=d.initial.kinetic_energy_j;
-  let keDisp,keSub;
-  if(keJ>=1e15){keDisp=(keJ/1e15).toFixed(2);keSub='千万亿 焦耳 ('+fmt(keJ)+' 焦耳)';}
-  else if(keJ>=1e12){keDisp=(keJ/1e12).toFixed(2);keSub='万亿 焦耳 ('+fmt(keJ)+' 焦耳)';}
-  else if(keJ>=1e9){keDisp=(keJ/1e9).toFixed(2);keSub='十亿 焦耳 ('+fmt(keJ)+' 焦耳)';}
+  let keDisp,keSub,keUnit='焦耳';
+  if(keJ>=1e15){keDisp=(keJ/1e15).toFixed(2);keUnit='千万亿焦耳';keSub='千万亿 焦耳 ('+fmt(keJ)+' 焦耳)';}
+  else if(keJ>=1e12){keDisp=(keJ/1e12).toFixed(2);keUnit='万亿焦耳';keSub='万亿 焦耳 ('+fmt(keJ)+' 焦耳)';}
+  else if(keJ>=1e9){keDisp=(keJ/1e9).toFixed(2);keUnit='十亿焦耳';keSub='十亿 焦耳 ('+fmt(keJ)+' 焦耳)';}
   else{keDisp=fmt(keJ);keSub='焦耳';}
-  document.getElementById('metricKE').innerHTML=keDisp+'<span class="mc-unit">焦耳</span>';
+  document.getElementById('metricKE').innerHTML=keDisp+'<span class="mc-unit">'+keUnit+'</span>';
   document.getElementById('metricKESub').textContent=keSub;
 
   const diaM=d.input_echo.diameter_m;
@@ -1745,7 +1753,7 @@ function renderResults(d){
   const ablationPct=(d.trajectory.ablation_ratio*100);
   document.getElementById('ablationRatio').textContent=ablationPct.toFixed(2)+' %';
   document.getElementById('ablationBar').style.width=clamp(ablationPct,0,100)+'%';
-  const eAtmPct=(d.trajectory.energy_atm_ratio*100);
+  const eAtmPct=Math.min(d.trajectory.energy_atm_ratio*100,100);
   document.getElementById('eAtmRatio').textContent=eAtmPct.toFixed(2)+' %';
   document.getElementById('eAtmBar').style.width=clamp(eAtmPct,0,100)+'%';
   document.getElementById('ablationMass').textContent=fmt(d.trajectory.ablation_kg)+' 千克';
