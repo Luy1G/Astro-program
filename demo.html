@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>陆地陨石撞击模拟器 v3.0 ｜ JS独立版</title>
 <style>
   * { box-sizing: border-box; }
@@ -100,7 +101,7 @@
   .level-card.safe .lc-level { color:#3fb950; }
 
   /* 底部动画控制栏：悬浮在底部居中 */
-  .anim-bar { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); z-index:10; padding:10px 16px; background:rgba(13,17,23,0.9); backdrop-filter:blur(8px); display:flex; gap:10px; align-items:center; font-size:12px; border:1px solid rgba(88,166,255,0.2); border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+  .anim-bar { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); z-index:10; padding:10px 16px; background:rgba(13,17,23,0.9); backdrop-filter:blur(8px); display:flex; gap:10px; align-items:center; font-size:12px; border:1px solid rgba(88,166,255,0.2); border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.5); width:max-content; max-width:calc(100vw - 24px); }
 
   .section-title { font-size:11px; color:#58a6ff; text-transform:uppercase; letter-spacing:1.5px; margin:0 0 10px 0; padding-bottom:6px; border-bottom:1px solid #21262d; }
   .control { margin-bottom:13px; }
@@ -170,9 +171,90 @@
   .ai-paragraph { opacity:0; transition:opacity 0.5s ease; margin-bottom:10px; padding-left:10px; border-left:2px solid rgba(137,87,229,0.3); }
   .ai-paragraph:last-child { margin-bottom:0; }
 
+  /* ============== 移动端适配（≤820px）============== */
+  html, body { overscroll-behavior: none; }
+  canvas { touch-action: none; }
+  .mobile-tabs { display: none; }
+  .sheet-backdrop { display: none; }
+
+  @media (max-width: 820px), (max-height: 520px) {
+    h1 { font-size: 13px; padding: 11px 12px; padding-right: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    h1 .ver { display: none; }
+    .fullscreen-canvas { height: 100vh; height: 100dvh; }
+
+    /* 顶部两个抽屉开关 */
+    .mobile-tabs { display: flex; position: fixed; top: 6px; right: 6px; gap: 6px; z-index: 31; }
+    .mobile-tabs button {
+      padding: 7px 13px; font-size: 12px; font-weight: 600; line-height: 1;
+      color: #8b949e; background: rgba(20,26,34,0.92);
+      border: 1px solid rgba(88,166,255,0.28); border-radius: 999px;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      -webkit-tap-highlight-color: transparent; cursor: pointer;
+    }
+    .mobile-tabs button.active { color: #58a6ff; border-color: #58a6ff; background: rgba(88,166,255,0.14); }
+
+    /* 两个面板改为底部抽屉 */
+    .panel-left, .panel-right {
+      position: fixed; top: auto; right: 0; bottom: 0; left: 0; width: 100%;
+      max-height: 72vh; max-height: 72dvh;
+      border-radius: 16px 16px 0 0;
+      padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+      transform: translateY(105%);
+      transition: transform .28s cubic-bezier(.2,.8,.25,1);
+      z-index: 26;
+      box-shadow: 0 -8px 30px rgba(0,0,0,.5);
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+    .panel-left.open, .panel-right.open { transform: translateY(0); }
+
+    /* 抽屉遮罩 */
+    .sheet-backdrop {
+      display: block; position: fixed; inset: 0; z-index: 25;
+      background: rgba(0,0,0,.45); opacity: 0; pointer-events: none;
+      transition: opacity .28s ease;
+    }
+    .sheet-backdrop.show { opacity: 1; pointer-events: auto; }
+
+    body.sheet-open .anim-bar { opacity: 0; pointer-events: none; }
+
+    /* 底部动画栏：两行、贴安全区 */
+    .anim-bar {
+      left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom));
+      transform: none; padding: 8px 10px; gap: 8px; font-size: 11px;
+      flex-wrap: wrap; justify-content: center; border-radius: 10px;
+    }
+    .anim-bar .time-bar { order: 10; flex-basis: 100%; }
+    .anim-bar .time-bar .time-label { min-width: 76px; font-size: 10px; }
+    .anim-bar input[type=range] { max-width: none; }
+    .anim-bar #speedSlider { flex: 1 1 70px; min-width: 56px; }
+    .anim-bar .status { display: none; }
+    .anim-bar { gap: 6px; }
+    /* 三个按钮的宽度是行内样式写死的，移动端要压窄才能和速度滑块同排 */
+    .anim-bar .btn { padding: 6px 10px !important; font-size: 12px !important; }
+
+    /* 手机端文字普遍偏小，整体抬一档 */
+    .control label { font-size: 13px; }
+    .metric-card .mc-value { font-size: 17px; }
+    .hero-card .hero-value { font-size: 30px; }
+  }
+
+  /* 超窄屏（≤380px）再压缩一点 */
+  @media (max-width: 380px) {
+    h1 { padding-right: 132px; font-size: 12px; }
+    .mobile-tabs button { padding: 6px 10px; font-size: 11px; }
+    .anim-bar { gap: 6px; padding: 7px 8px; }
+  }
 </style>
 </head>
 <body>
+<!-- 移动端：抽屉开关 + 遮罩（桌面端由 CSS 隐藏） -->
+<div class="mobile-tabs">
+  <button type="button" data-sheet="left">⚙ 参数</button>
+  <button type="button" data-sheet="right">📊 结果</button>
+</div>
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+
 <h1>陆地陨石撞击模拟器 <span>v3.0</span> ｜ <span class="ver">JS独立版</span></h1>
 <!-- 全屏canvas背景 -->
 <div class="fullscreen-canvas">
@@ -1106,10 +1188,15 @@ const ctx=canvas.getContext('2d');
 let W=900,H=620;
 function resizeCanvas(){
   // canvas原生尺寸 = window.innerWidth / window.innerHeight
+  // 按 devicePixelRatio 提高清晰度（上限 2，避免手机上过度耗电）
+  const dpr=Math.min(window.devicePixelRatio||1,2);
   W=window.innerWidth;
   H=window.innerHeight;
-  canvas.width=W;
-  canvas.height=H;
+  canvas.width=Math.round(W*dpr);
+  canvas.height=Math.round(H*dpr);
+  canvas.style.width=W+'px';
+  canvas.style.height=H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);   // 之后所有绘制仍用 CSS 像素坐标
   // 重新生成星空，确保铺满整个画布
   initStarfield();
   // 重设地球
@@ -1147,6 +1234,69 @@ canvas.addEventListener('wheel',e=>{
   if(!ANIM.playing)draw(performance.now());
 },{passive:false});
 canvas.style.cursor='grab';
+
+// ============== 触摸手势（单指平移 / 双指缩放）==============
+let _touch=null;
+function _touchDist(a,b){return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);}
+canvas.addEventListener('touchstart',e=>{
+  if(e.touches.length===1){
+    _touch={mode:'pan',x:e.touches[0].clientX,y:e.touches[0].clientY};
+  }else if(e.touches.length===2){
+    const a=e.touches[0],b=e.touches[1];
+    _touch={mode:'pinch',d:_touchDist(a,b)||1};
+  }
+  e.preventDefault();
+},{passive:false});
+canvas.addEventListener('touchmove',e=>{
+  if(!_touch)return;
+  if(_touch.mode==='pan'&&e.touches.length===1){
+    const t=e.touches[0];
+    CAM.x+=t.clientX-_touch.x;CAM.y+=t.clientY-_touch.y;
+    _touch.x=t.clientX;_touch.y=t.clientY;
+  }else if(_touch.mode==='pinch'&&e.touches.length===2){
+    const a=e.touches[0],b=e.touches[1];
+    const rect=canvas.getBoundingClientRect();
+    const cx=(a.clientX+b.clientX)/2-rect.left,cy=(a.clientY+b.clientY)/2-rect.top;
+    const d=_touchDist(a,b)||1;
+    const nz=clamp(CAM.zoom*(d/_touch.d),0.08,3.0);
+    const sc=nz/CAM.zoom;
+    CAM.x=cx-(cx-CAM.x)*sc;CAM.y=cy-(cy-CAM.y)*sc;CAM.zoom=nz;
+    _touch.d=d;
+  }
+  if(!ANIM.playing)draw(performance.now());
+  e.preventDefault();
+},{passive:false});
+function _touchEnd(e){
+  if(e.touches.length===1){_touch={mode:'pan',x:e.touches[0].clientX,y:e.touches[0].clientY};}
+  else if(e.touches.length===0){_touch=null;}
+  else if(e.touches.length===2){const a=e.touches[0],b=e.touches[1];_touch={mode:'pinch',d:_touchDist(a,b)||1};}
+}
+canvas.addEventListener('touchend',_touchEnd,{passive:false});
+canvas.addEventListener('touchcancel',_touchEnd,{passive:false});
+
+// ============== 移动端底部抽屉 ==============
+(function(){
+  const tabs=Array.from(document.querySelectorAll('.mobile-tabs button'));
+  const panels={left:document.querySelector('.panel-left'),right:document.querySelector('.panel-right')};
+  const backdrop=document.getElementById('sheetBackdrop');
+  const mq=window.matchMedia('(max-width:820px), (max-height:520px)');
+  let active=null;
+  function render(){
+    tabs.forEach(b=>b.classList.toggle('active',b.dataset.sheet===active));
+    Object.keys(panels).forEach(k=>panels[k].classList.toggle('open',k===active));
+    backdrop.classList.toggle('show',!!active);
+    document.body.classList.toggle('sheet-open',!!active);
+  }
+  function toggle(which){active=(active===which)?null:which;render();}
+  function close(){active=null;render();}
+  tabs.forEach(b=>b.addEventListener('click',()=>toggle(b.dataset.sheet)));
+  backdrop.addEventListener('click',close);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+  mq.addEventListener('change',e=>{if(!e.matches)close();});
+  window.__closeSheet=close;
+  window.__openResultsSheet=function(){if(mq.matches){active='right';render();}};
+  window.__isMobile=function(){return mq.matches;};
+})();
 
 // ============== 星空 ==============
 let stars={far:[],mid:[],near:[]};
@@ -1517,7 +1667,7 @@ function updateLabels(){
 }
 ['diameter','velocity','angle','observer_distance','material'].forEach(id=>document.getElementById(id).addEventListener('input',updateLabels));
 document.getElementById('speedSlider').addEventListener('input',e=>{ANIM.speed=parseFloat(e.target.value);document.getElementById('speedVal').textContent=ANIM.speed.toFixed(1)+'×';});
-document.getElementById('runBtn').addEventListener('click',runSim);
+document.getElementById('runBtn').addEventListener('click',()=>{window.__userRun=true;runSim();});
 
 // ============== 模拟 ==============
 function runSim(){
@@ -1538,6 +1688,8 @@ function runSim(){
       playAnim();
       document.getElementById("aiFeatureArea").style.display="block";
       document.getElementById('animStatus').textContent='就绪';
+      // 移动端：用户主动点“运行模拟”后，自动收起参数抽屉、弹出结果抽屉
+      if(window.__userRun){window.__userRun=false;if(window.__openResultsSheet)window.__openResultsSheet();}
     }, 30);
   } catch(e){
     document.getElementById('animStatus').textContent='错误: '+e.message;
@@ -2454,6 +2606,10 @@ function drawHUD(time){
   ctx.fillStyle='rgba(10,15,22,0.85)';ctx.strokeStyle='rgba(88,166,255,0.3)';ctx.lineWidth=1;
   roundRect(ctx,hudX,hudY,hudW,hudH,6);ctx.fill();ctx.stroke();
   ctx.fillStyle='#58a6ff';ctx.font='bold 11px "Microsoft YaHei"';ctx.fillText('⚡ 实时状态',hudX+10,hudY+16);
+  // 时间放右上角，避免和“质量”那行的数值叠在一起
+  ctx.fillStyle='#6e7681';ctx.textAlign='right';
+  ctx.fillText(`${ANIM.t.toFixed(1)} / ${ANIM.totalAnimTime.toFixed(1)} s`,hudX+hudW-10,hudY+16);
+  ctx.textAlign='left';
   ctx.fillStyle='#30363d';ctx.fillRect(hudX+10,hudY+22,hudW-20,1);
   ctx.font='11px Consolas,monospace';
   if(pos){
@@ -2464,7 +2620,6 @@ function drawHUD(time){
     ctx.fillStyle='#8b949e';ctx.fillText('质量',hudX+10,hudY+70);
     ctx.fillStyle='#d2a8ff';ctx.fillText(`${fmt(pos.m_kg)} 千克`,hudX+68,hudY+70);
   }
-  ctx.fillStyle='#6e7681';ctx.fillText(`${ANIM.t.toFixed(1)} / ${ANIM.totalAnimTime.toFixed(1)} s`,hudX+138,hudY+70);
   // 进度条
   const bx=hudX,by=hudY+hudH+8,bw=hudW,bh=4;
   ctx.fillStyle='#21262d';ctx.fillRect(bx,by,bw,bh);
