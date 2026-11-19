@@ -1418,7 +1418,7 @@ function drawCityMarkers(){
   }
 }
 // 大气分层（国际气象组织标准），单位 km。MAX_ALT=200 时热层截断到200km
-const ATMOSPHERE_LAYERS=[
+const ATMOSPHERE_LAYER_BANDS=[
   {name:'对流层', bot:0,  top:12,  fill:'rgba(80,150,210,0.18)',  edge:'rgba(120,180,220,0.70)', label:'rgba(150,200,230,0.98)', desc:'天气现象'},
   {name:'平流层', bot:12, top:50,  fill:'rgba(160,120,200,0.14)', edge:'rgba(180,140,220,0.60)', label:'rgba(200,160,230,0.98)', desc:'臭氧层'},
   {name:'中间层', bot:50, top:85,  fill:'rgba(60,100,180,0.12)',  edge:'rgba(90,130,200,0.55)',  label:'rgba(140,170,220,0.98)', desc:'流星烧蚀'},
@@ -1432,7 +1432,7 @@ function drawAtmosphereLayers(time){
   const visX=(-CAM.x)/CAM.zoom, visW=W/CAM.zoom;
   const farL=visX-visW, farR=visX+visW*2;
   // 自下而上绘制各层（地面到高空）
-  for(const L of ATMOSPHERE_LAYERS){
+  for(const L of ATMOSPHERE_LAYER_BANDS){
     const topH=Math.min(L.top, MAX_ALT);
     if(topH<=L.bot) continue;
     const yTop=altToY(topH);
