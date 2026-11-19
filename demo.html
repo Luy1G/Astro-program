@@ -826,6 +826,10 @@ function determine_mode(trajectory_result, diameter_m, material_key) {
 
     var mode, ground_efficiency, release_energy, release_altitude_km;
 
+    // 事件总当量 = 大气中已沉积的能量 + 落地时的剩余动能
+    // 不能只看终端动能：空爆/解体后落地时，绝大部分能量其实已经在大气里释放
+    var total_release_e = trajectory_result["energy_atm_j"] + term["e_kinetic_j"];
+
     if (impact) {
         if (triggered) {
             mode = "地表撞击（解体后碎片云撞击）";
@@ -833,18 +837,17 @@ function determine_mode(trajectory_result, diameter_m, material_key) {
             mode = "地表撞击（完整硬撞击）";
         }
         ground_efficiency = 1.0;
-        release_energy = term["e_kinetic_j"];
+        release_energy = total_release_e;
         release_altitude_km = 0.0;
     } else if (triggered) {
         mode = "空爆（通古斯模式）";
         ground_efficiency = 0.85;
-        // 空爆释放的是已经沉积在大气中的能量；终端剩余动能只剩 0.1% 量级
-        release_energy = trajectory_result["energy_atm_j"];
+        release_energy = total_release_e;
         release_altitude_km = brk["altitude_km"];
     } else {
         mode = "大气烧毁（无地面影响）";
         ground_efficiency = 0.0;
-        release_energy = 0.0;
+        release_energy = total_release_e;
         release_altitude_km = trajectory_result["energy_peak_h_km"];
     }
 

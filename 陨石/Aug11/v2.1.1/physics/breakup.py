@@ -27,6 +27,10 @@ def determine_mode(trajectory_result, diameter_m, material_key):
     impact = term["impact_happened"]
     triggered = brk["triggered"]
 
+    # 事件总当量 = 大气中已沉积的能量 + 落地时的剩余动能
+    # 不能只看终端动能：空爆/解体后落地时，绝大部分能量其实已经在大气里释放
+    total_release_e = trajectory_result["energy_atm_j"] + term["e_kinetic_j"]
+
     if impact:
         # 地表撞击（包含解体后碎片撞击）
         if triggered:
@@ -34,20 +38,19 @@ def determine_mode(trajectory_result, diameter_m, material_key):
         else:
             mode = "地表撞击（完整硬撞击）"
         ground_efficiency = 1.0
-        release_energy = term["e_kinetic_j"]   # 用真实剩余动能
+        release_energy = total_release_e
         release_altitude_km = 0.0
     elif triggered:
-        # 纯空爆：解体后未到地面，剩余能量沉积在解体高度附近
+        # 纯空爆：解体后未到地面，能量沉积在解体高度附近
         mode = "空爆（通古斯模式）"
         ground_efficiency = 0.85                # 空爆杀伤效率高
-        # 空爆释放的是已经沉积在大气中的能量；终端剩余动能只剩 0.1% 量级
-        release_energy = trajectory_result["energy_atm_j"]
+        release_energy = total_release_e
         release_altitude_km = brk["altitude_km"]
     else:
         # 烧毁：未触发解体也未触地（极小天体）
         mode = "大气烧毁（无地面影响）"
         ground_efficiency = 0.0
-        release_energy = 0.0
+        release_energy = total_release_e
         release_altitude_km = trajectory_result["energy_peak_h_km"]
 
     # 穿透比（用于解释为何 km 级天体必然地撞）
