@@ -7,7 +7,7 @@
     "target": "land",
     "angle_group": null,
     "e_min": 0.0,
-    "e_max": 1000000.0,
+    "e_max": 100000.0,
     "disaster_title": "微型撞击",
     "main_text": "一颗直径约{{diameter}}米的冰彗星以{{velocity}}公里/秒的速度闯入大气层，入射角约{{angle}}度。冰质结构疏松，在高层大气中迅速升温解体，约{{ablation_ratio_pct}}的质量在大气中被烧蚀，化作一场壮观的空中烟火。",
     "angle_desc": "无特定角度描述，适用于任意入射角。",
@@ -16,7 +16,7 @@
     "land_extra": "陆地表面可能感受到轻微震动，部分老旧建筑玻璃震碎，森林区域可能有小范围热辐射灼伤，但无永久性地貌改变。",
     "ocean_extra": "",
     "visual_cue": "高空火球闪耀，碎云扩散",
-    "warning_note": "E<100万吨TNT，L1级别，适用于通古斯级以下空中解体事件，尤其适合冰彗星材质。"
+    "warning_note": "E<10万吨TNT，L1级别，适用于通古斯级以下空中解体事件，尤其适合冰彗星材质。"
   },
   {
     "rule_id": "L1-airburst-ice-ocean-null",
@@ -26,7 +26,7 @@
     "target": "ocean",
     "angle_group": null,
     "e_min": 0.0,
-    "e_max": 1000000.0,
+    "e_max": 100000.0,
     "disaster_title": "微型撞击",
     "main_text": "在蔚蓝的海洋上空，一颗主要由冰构成的彗星碎块以高速闯入大气层。由于冰质结构疏松，它在高空便剧烈烧蚀，主体在距地面约{{breakup_altitude}}公里处解体，最终仅有{{remain_mass_ratio}}的质量残留。解体瞬间，释放出明亮的火球与强烈的热辐射，但能量主要消耗在高空，未能触及海面。",
     "angle_desc": "本次事件不区分角度，通用描述：无论入射角度如何，冰质天体均易在高空解体，能量释放相对分散。",
@@ -35,7 +35,7 @@
     "land_extra": "",
     "ocean_extra": "尽管未直接撞击海面，但空中冲击波可能引发轻微海面扰动，预计海啸波高不超过{{tsunami_h}}米，几乎无破坏性。",
     "visual_cue": "高空火球闪耀海面",
-    "warning_note": "E<100万吨TNT，L1级别，适用于冰质天体空中解体事件，主要影响限于高空光学效应与轻微海面波动。"
+    "warning_note": "E<10万吨TNT，L1级别，适用于冰质天体空中解体事件，主要影响限于高空光学效应与轻微海面波动。"
   },
   {
     "rule_id": "L1-airburst-rock-land-null",
@@ -45,7 +45,7 @@
     "target": "land",
     "angle_group": null,
     "e_min": 0.0,
-    "e_max": 1000000.0,
+    "e_max": 100000.0,
     "disaster_title": "微型撞击",
     "main_text": "一颗直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度闯入大气层，入射角约{{angle}}度。由于体积较小，它在高空便发生剧烈解体，约{{ablation_ratio_pct}}的质量在大气中被烧蚀，仅剩的碎片也在下落过程中完全蒸发。虽然没有直接在大气层内剧烈爆炸，但爆炸产生的冲击波和热辐射仍对局部区域造成影响。",
     "angle_desc": "由于该事件规模较小，入射角度对整体影响不显著，但不同角度仍会影响能量释放的高度和范围。",
@@ -54,7 +54,7 @@
     "land_extra": "陆地上，爆炸产生的冲击波可能震碎附近建筑的玻璃，森林区域可能出现局部树木倒伏，但整体破坏范围有限。",
     "ocean_extra": "",
     "visual_cue": "高空闪光与冲击波环",
-    "warning_note": "E<100万吨TNT，L1级别，适用于通古斯级以下空中解体事件。"
+    "warning_note": "E<10万吨TNT，L1级别，适用于通古斯级以下空中解体事件。"
   },
   {
     "rule_id": "L1-airburst-rock-ocean-null",
@@ -64,7 +64,7 @@
     "target": "ocean",
     "angle_group": null,
     "e_min": 0.0,
-    "e_max": 1000000.0,
+    "e_max": 100000.0,
     "disaster_title": "微型撞击",
     "main_text": "一颗直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度闯入地球大气层。在距离地面约{{breakup_altitude}}公里的高空，陨石因剧烈摩擦而解体，仅剩{{remain_mass_ratio}}的质量继续下落。空中爆发出耀眼的火球，冲击波迅速扩散，但能量尚不足以形成明显的地面效应。",
     "angle_desc": "以通用斜角进入大气层，能量在高层大气中分散释放，地面影响有限。",
@@ -73,7 +73,7 @@
     "land_extra": "",
     "ocean_extra": "海洋表面可能掀起轻微波动，但预计浪高不超过{{tsunami_h}}米，对航运影响极小。",
     "visual_cue": "高空闪光，火球短暂可见",
-    "warning_note": "E<100万吨TNT，L1级别，适用于通古斯级以下空中解体事件。"
+    "warning_note": "E<10万吨TNT，L1级别，适用于通古斯级以下空中解体事件。"
   },
   {
     "rule_id": "L1-airburst-iron-land-null",
@@ -83,7 +83,7 @@
     "target": "land",
     "angle_group": null,
     "e_min": 0.0,
-    "e_max": 1000000.0,
+    "e_max": 100000.0,
     "disaster_title": "微型撞击",
     "main_text": "一颗铁质小行星以高速闯入大气层，尽管材质致密，但在低空依然发生剧烈解体。模拟显示，其剩余质量比例约为{{remain_mass_ratio}}，解体高度约{{breakup_altitude}}公里。空中爆炸产生的冲击波迅速扩散，但能量有限，未对地面造成显著破坏。",
     "angle_desc": "无特定入射角度，路径随机，能量释放相对分散。",
@@ -92,7 +92,7 @@
     "land_extra": "陆地上，树木可能被冲击波折断，部分建筑玻璃震碎，但整体影响轻微。",
     "ocean_extra": "",
     "visual_cue": "高空火球短暂闪现",
-    "warning_note": "E<100万吨TNT，L1级别，适用于低空空中解体事件，冲击波影响有限。"
+    "warning_note": "E<10万吨TNT，L1级别，适用于低空空中解体事件，冲击波影响有限。"
   },
   {
     "rule_id": "L1-airburst-iron-ocean-null",
@@ -102,7 +102,7 @@
     "target": "ocean",
     "angle_group": null,
     "e_min": 0.0,
-    "e_max": 1000000.0,
+    "e_max": 100000.0,
     "disaster_title": "微型撞击",
     "main_text": "一颗铁质小行星以极快速度闯入地球大气层，其残留质量比例约为 {{remain_mass_ratio}}，在约 {{breakup_altitude}} 公里的高空发生剧烈爆炸。尽管铁陨石结构致密，但巨大的动能仍使其在空中解体，释放出耀眼的火球。",
     "angle_desc": "无特定角度，通常以随机倾角进入，爆炸高度和能量分布较为随机。",
@@ -111,7 +111,7 @@
     "land_extra": "",
     "ocean_extra": "爆炸产生的冲击波可能在海面引发微小的波浪，预计最高浪高约 {{tsunami_h}} 米，对海洋生态影响有限。",
     "visual_cue": "高空爆闪，火球扩散",
-    "warning_note": "E<100万吨TNT，L1级别，适用于高空空中解体事件，不涉及地表高空解体冲击波扩散。"
+    "warning_note": "E<10万吨TNT，L1级别，适用于高空空中解体事件，不涉及地表高空解体冲击波扩散。"
   },
   {
     "rule_id": "L1-surface-ice-land-null",
@@ -121,7 +121,7 @@
     "target": "land",
     "angle_group": null,
     "e_min": 0.0,
-    "e_max": 1000000.0,
+    "e_max": 100000.0,
     "disaster_title": "微型撞击",
     "main_text": "一颗冰彗星以{{velocity}} km/s的速度闯入大气层，其直径约{{diameter}}米。由于冰质结构疏松，它在高空便已开始解体，到达地面时仅剩{{remain_mass_ratio}}的质量。在{{breakup_altitude}}公里的高度，主体碎裂成大量冰块，但仍有部分碎片砸向地面。撞击瞬间释放出约{{final_tnt}}TNT当量的能量，形成一个浅小的撞击坑。",
     "angle_desc": "此次撞击未区分入射角度，冲击效果呈各向同性扩散。",
@@ -130,7 +130,7 @@
     "land_extra": "在陆地上，撞击点附近的建筑物玻璃可能震碎，树木摇晃，但整体破坏范围有限。地表出现小规模凹陷，扬尘扩散至数百米外。",
     "ocean_extra": "",
     "visual_cue": "白色冰尘腾起，小坑形成",
-    "warning_note": "适用于E<100万吨TNT，L1级别，冰质彗星陆地地表撞击，破坏范围局部。"
+    "warning_note": "适用于E<10万吨TNT，L1级别，冰质彗星陆地地表撞击，破坏范围局部。"
   },
   {
     "rule_id": "L1-surface-ice-ocean-null",
@@ -140,7 +140,7 @@
     "target": "ocean",
     "angle_group": null,
     "e_min": 0.0,
-    "e_max": 1000000.0,
+    "e_max": 100000.0,
     "disaster_title": "微型撞击",
     "main_text": "一颗直径约{{diameter}}米的冰质彗星碎片以{{velocity}}公里/秒的速度切入大气层。由于冰体结构疏松，它在高空便已剧烈烧蚀，到达低空时剩余质量仅约{{remain_mass_ratio}}，最终在{{breakup_altitude}}公里高度附近发生部分解体，但仍有残骸直接撞向海面。",
     "angle_desc": "本次撞击未特别区分入射角度，轨迹呈一般性倾斜，能量释放较为分散。",
@@ -149,7 +149,7 @@
     "land_extra": "",
     "ocean_extra": "撞击引发的海啸规模较小，预计近岸浪高可达{{tsunami_h}}米，可能对沿海低洼地区造成轻微影响。",
     "visual_cue": "海面激起白色水柱，水雾弥漫",
-    "warning_note": "E<100万吨TNT，L1级别，适用于冰质小天体落入海洋的微小型地表撞击事件。"
+    "warning_note": "E<10万吨TNT，L1级别，适用于冰质小天体落入海洋的微小型地表撞击事件。"
   },
   {
     "rule_id": "L1-surface-rock-land-null",
@@ -159,7 +159,7 @@
     "target": "land",
     "angle_group": null,
     "e_min": 0.0,
-    "e_max": 1000000.0,
+    "e_max": 100000.0,
     "disaster_title": "微型撞击",
     "main_text": "一颗直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度撞向地面，撞击角度约为{{angle}}度。在大气层中，它并未完全烧蚀，剩余质量比例约为{{remain_mass_ratio}}，在{{breakup_altitude}}公里的高度才发生部分解体。最终，它在地表砸出一个直径约{{crater_r}}米的撞击坑，并激起高达{{fireball_r}}米的火球。",
     "angle_desc": "此次撞击未区分具体角度，但一般而言，低角度入射会拉长冲击波的作用范围，高角度入射则更集中于撞击点。",
@@ -168,7 +168,7 @@
     "land_extra": "撞击点附近的建筑物可能受到震动，窗户破碎，树木被冲击波折断，地面出现小规模的地震波，但破坏范围有限。",
     "ocean_extra": "",
     "visual_cue": "地面溅起尘土，火光冲天",
-    "warning_note": "能量低于100万吨TNT，L1级别，适用于小型地表撞击事件，主要影响局部区域。"
+    "warning_note": "能量低于10万吨TNT，L1级别，适用于小型地表撞击事件，主要影响局部区域。"
   },
   {
     "rule_id": "L1-surface-rock-ocean-null",
@@ -178,7 +178,7 @@
     "target": "ocean",
     "angle_group": null,
     "e_min": 0.0,
-    "e_max": 1000000.0,
+    "e_max": 100000.0,
     "disaster_title": "微型撞击",
     "main_text": "一颗直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度闯入地球大气层，在大约{{breakup_altitude}}公里的高度开始解体，最终仍有{{remain_mass_ratio}}的质量残留并坠入海洋。陨石入水瞬间激起巨大的水柱，海面掀起剧烈波动，但总体能量有限，仅形成局部海啸和冲击波。",
     "angle_desc": "本次撞击未区分入射角度，陨石以随机倾角进入大气层，能量释放较为分散。",
@@ -187,7 +187,7 @@
     "land_extra": "",
     "ocean_extra": "撞击引发的海啸浪高可达{{tsunami_h}}米，对附近海岸线可能造成轻微影响。",
     "visual_cue": "海面腾起巨大水柱，冲击波扩散",
-    "warning_note": "E<100万吨TNT，L1级别，适用于小型海洋岩石撞击事件，影响范围有限。"
+    "warning_note": "E<10万吨TNT，L1级别，适用于小型海洋岩石撞击事件，影响范围有限。"
   },
   {
     "rule_id": "L1-surface-iron-land-null",
@@ -197,7 +197,7 @@
     "target": "land",
     "angle_group": null,
     "e_min": 0.0,
-    "e_max": 1000000.0,
+    "e_max": 100000.0,
     "disaster_title": "微型撞击",
     "main_text": "一颗铁质陨石以高速闯入大气层，尽管其结构致密、抗烧蚀能力强，但在穿越大气层的过程中仍有少量物质被剥蚀。当它抵达低空时，剩余质量比例约为 {{remain_mass_ratio}}，最终在约 {{breakup_altitude}} 千米的高度发生小规模解体和撞击。",
     "angle_desc": "本次事件不区分入射角度，通用描述：该天体以随机角度进入大气层，能量释放较为分散，局部影响有限。",
@@ -206,7 +206,7 @@
     "land_extra": "在着陆点附近，建筑玻璃可能被震碎，树木可能被冲击波折断，地面上会出现明显的撞击痕迹，并伴有短暂的局部地震。",
     "ocean_extra": "",
     "visual_cue": "地面扬起尘土，微坑形成",
-    "warning_note": "E<100万吨TNT，L1级别，适用于小型铁陨石地表撞击事件，影响范围有限。"
+    "warning_note": "E<10万吨TNT，L1级别，适用于小型铁陨石地表撞击事件，影响范围有限。"
   },
   {
     "rule_id": "L1-surface-iron-ocean-null",
@@ -216,7 +216,7 @@
     "target": "ocean",
     "angle_group": null,
     "e_min": 0.0,
-    "e_max": 1000000.0,
+    "e_max": 100000.0,
     "disaster_title": "微型撞击",
     "main_text": "一颗铁质小行星以高速穿透大气层，尽管其结构致密，但仍有近{{remain_mass_ratio}}的质量残留至低空，在约{{breakup_altitude}}公里高度才发生明显解体。由于铁陨石抗烧蚀能力极强，主体最终以集中动能砸入海洋，激起局部水柱与冲击波。",
     "angle_desc": "本次撞击未区分入射角度，铁陨石以通用轨迹坠落，能量释放较为集中。",
@@ -225,7 +225,7 @@
     "land_extra": "",
     "ocean_extra": "撞击引发的海啸波高可达{{tsunami_h}}米，对附近海岸线构成威胁。",
     "visual_cue": "海面爆起巨大水柱",
-    "warning_note": "E<100万吨TNT，L1级别，适用于小型铁陨石海洋撞击事件，注意海啸影响。"
+    "warning_note": "E<10万吨TNT，L1级别，适用于小型铁陨石海洋撞击事件，注意海啸影响。"
   },
   {
     "rule_id": "L2-airburst-ice-land-G1",
@@ -234,7 +234,7 @@
     "material": "ice",
     "target": "land",
     "angle_group": "G1",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗冰彗星以低角度斜掠大气层，在约{{breakup_altitude}}公里的高空发生剧烈解体，剩余质量比例仅剩{{remain_mass_ratio}}。由于冰质结构疏松，大部分能量在高层大气中释放，形成耀眼火球与剧烈冲击波。",
@@ -244,7 +244,7 @@
     "land_extra": "陆地表面未形成空中冲击波，但冲击波可能造成大面积玻璃破碎、树木倒伏，并引发局部火灾风险。",
     "ocean_extra": "",
     "visual_cue": "高空火球闪爆，碎块云扩散",
-    "warning_note": "适用于E在1.0e+06至1.0e+09吨TNT、L2级别、冰质彗星低角度空中解体事件，注意与地表撞击区分。"
+    "warning_note": "适用于E在1.0e+05至1.0e+09吨TNT、L2级别、冰质彗星低角度空中解体事件，注意与地表撞击区分。"
   },
   {
     "rule_id": "L2-airburst-ice-land-G2",
@@ -253,7 +253,7 @@
     "material": "ice",
     "target": "land",
     "angle_group": "G2",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的冰彗星以{{velocity}}公里/秒的速度斜掠大气层，入射角{{angle}}度。由于冰质结构疏松，它在{{breakup_altitude}}公里高空开始剧烈解体，仅剩{{remain_mass_ratio}}的质量抵达低空。解体瞬间释放出相当于{{final_tnt}}TNT的能量，形成耀眼火球。",
@@ -272,7 +272,7 @@
     "material": "ice",
     "target": "land",
     "angle_group": "G3",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的冰彗星以{{velocity}}公里/秒的速度闯入大气层，入射角近垂直，如同天降利刃。冰质结构在高温中迅速崩解，于约{{breakup_altitude}}公里高空发生猛烈空爆，剩余质量仅{{remain_mass_ratio}}%。爆炸瞬间释放出相当于{{final_tnt}}TNT的能量，炽热冲击波以爆心为球心向外急剧扩散。",
@@ -282,7 +282,7 @@
     "land_extra": "爆心下方森林大面积燃烧，建筑物玻璃尽碎，部分老旧房屋倒塌，地面震动持续数秒，但未留下空中冲击。",
     "ocean_extra": "",
     "visual_cue": "垂直天降白光，空中火球爆散",
-    "warning_note": "E在1e6至1e9吨TNT之间，L2级空爆，适用于冰质天体近垂直入射的陆地空中解体事件。"
+    "warning_note": "E在1e5至1e9吨TNT之间，L2级空爆，适用于冰质天体近垂直入射的陆地空中解体事件。"
   },
   {
     "rule_id": "L2-airburst-ice-ocean-G1",
@@ -291,7 +291,7 @@
     "material": "ice",
     "target": "ocean",
     "angle_group": "G1",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗冰彗星以浅角度斜掠进入地球大气层，在约{{breakup_altitude}}公里高度发生剧烈解体。冰质结构疏松，在高速摩擦中迅速烧蚀，仅剩{{remain_mass_ratio}}的质量继续下落。空中爆发出耀眼的白蓝色闪光，巨大的火球在云层上翻滚，冲击波向四周扩散，激起下方海面的剧烈震荡。",
@@ -310,7 +310,7 @@
     "material": "ice",
     "target": "ocean",
     "angle_group": "G2",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的冰彗星以{{velocity}}公里/秒的速度闯入地球大气层。由于冰质结构疏松，它在约{{breakup_altitude}}公里的高度开始剧烈解体，仅剩{{remain_mass_ratio}}的质量继续下冲。高空爆裂产生的火球照亮了整片海域，冲击波以超音速向四周扩散，海面掀起巨浪，但并未触及海底。",
@@ -329,7 +329,7 @@
     "material": "ice",
     "target": "ocean",
     "angle_group": "G3",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的冰彗星以{{velocity}}公里/秒的速度、{{angle}}度的陡角切入地球大气层。由于冰质结构疏松，它在约{{breakup_altitude}}公里的高空急剧升温解体，剩余质量仅为初始质量的{{remain_mass_ratio}}。巨大的能量在空中释放，形成一个直径达{{fireball_r}}公里的炽热火球，强烈的热辐射瞬间灼烧海面，冲击波以超音速向外扩散，覆盖半径达{{blast_outer_r}}公里。",
@@ -348,7 +348,7 @@
     "material": "rock",
     "target": "land",
     "angle_group": "G1",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的岩石陨石以{{angle}}度浅角斜掠大气层，速度{{velocity}}公里/秒。由于入射角极小，它在高层大气中经历了漫长而剧烈的摩擦，剩余质量仅{{remain_mass_ratio}}，在约{{breakup_altitude}}公里高空发生猛烈空爆。巨大的动能瞬间转化为热辐射和冲击波，天空被照得如同白昼，地面上的建筑物玻璃纷纷碎裂，树木被气浪连根拔起。",
@@ -358,7 +358,7 @@
     "land_extra": "陆地地区首当其冲受到冲击波和热辐射的袭击，城市建筑受损严重，森林边缘出现大面积烧灼痕迹。地震仪记录到持续数分钟的微震，但未造成明显的地表断裂。",
     "ocean_extra": "",
     "visual_cue": "高空火球连闪，冲击波云环扩散",
-    "warning_note": "E在1e6~1e9吨TNT，L2级别，适用于浅角空爆陆地事件，能量分散，不产生空中冲击。"
+    "warning_note": "E在1e5~1e9吨TNT，L2级别，适用于浅角空爆陆地事件，能量分散，不产生空中冲击。"
   },
   {
     "rule_id": "L2-airburst-rock-land-G2",
@@ -367,7 +367,7 @@
     "material": "rock",
     "target": "land",
     "angle_group": "G2",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一块直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度闯入大气层，入射角约{{angle}}度。由于岩石中等结构，它在高空发生剧烈解体，剩余质量比仅为{{remain_mass_ratio}}，在{{breakup_altitude}}公里高度处产生强烈空爆。巨大的火球照亮天空，冲击波以超音速向外扩散，热辐射灼烤大地，虽未直接在大气层内剧烈爆炸，但能量释放仍造成广泛影响。",
@@ -377,7 +377,7 @@
     "land_extra": "在陆地，空爆冲击波可导致森林倒伏、建筑物部分坍塌，地面可能产生裂缝，但无直接高空解体冲击波扩散。",
     "ocean_extra": "",
     "visual_cue": "高空火球闪烁，冲击波云环扩散",
-    "warning_note": "适用于能量在100万吨至10亿吨TNT之间、岩石质天体在陆地高空解体的小型灾害事件，冲击波和热辐射为主要破坏因素。"
+    "warning_note": "适用于能量在10万吨至10亿吨TNT之间、岩石质天体在陆地高空解体的小型灾害事件，冲击波和热辐射为主要破坏因素。"
   },
   {
     "rule_id": "L2-airburst-rock-land-G3",
@@ -386,7 +386,7 @@
     "material": "rock",
     "target": "land",
     "angle_group": "G3",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度、接近垂直的角度冲入大气层。高空剧烈摩擦使其迅速升温，在{{breakup_altitude}}公里高度发生猛烈解体，剩余质量仅为初始的{{remain_mass_ratio}}。瞬间爆发出耀眼火球，释放出相当于{{final_tnt}}TNT的能量，强大的冲击波和热辐射向四周扩散。",
@@ -396,7 +396,7 @@
     "land_extra": "冲击波导致大片森林倒伏，城市玻璃幕墙破碎，老旧建筑可能坍塌，地面震动明显，但无陨石坑形成。",
     "ocean_extra": "",
     "visual_cue": "天空闪现刺眼白昼光，火球膨胀",
-    "warning_note": "适用于岩石陨石高空空爆，陆地目标，陡角度入射，TNT当量在1e6至1e9吨之间，L2级小型灾害。"
+    "warning_note": "适用于岩石陨石高空空爆，陆地目标，陡角度入射，TNT当量在1e5至1e9吨之间，L2级小型灾害。"
   },
   {
     "rule_id": "L2-airburst-rock-ocean-G1",
@@ -405,7 +405,7 @@
     "material": "rock",
     "target": "ocean",
     "angle_group": "G1",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度斜掠大气层，入射角约{{angle}}度。由于受热剧烈，它在高空{{breakup_altitude}}公里处发生解体，剩余质量仅为初始的{{remain_mass_ratio}}。解体产生的碎块云在高层大气中迅速燃烧，释放出相当于{{final_tnt}}TNT的能量，化作一个直径{{fireball_r}}米的炽热火球。",
@@ -415,7 +415,7 @@
     "land_extra": "",
     "ocean_extra": "爆炸产生的冲击波在海面引发巨浪，预计海啸高度可达{{tsunami_h}}米，可能对沿海地区造成威胁。",
     "visual_cue": "高空火球照亮海天",
-    "warning_note": "适用于E在100万吨至10亿吨TNT之间，岩石陨石海洋上空浅角度空爆事件，L2级别。"
+    "warning_note": "适用于E在10万吨至10亿吨TNT之间，岩石陨石海洋上空浅角度空爆事件，L2级别。"
   },
   {
     "rule_id": "L2-airburst-rock-ocean-G2",
@@ -424,7 +424,7 @@
     "material": "rock",
     "target": "ocean",
     "angle_group": "G2",
-    "e_min": 1000000,
+    "e_min": 100000.0,
     "e_max": 1000000000,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度、{{angle}}°的入射角斜掠海洋上空。在穿越大气层的过程中，由于岩石中等密度的结构，它在高度约{{breakup_altitude}}公里处发生剧烈解体，剩余质量仅占初始的{{remain_mass_ratio}}。解体释放的巨大能量在空中转化为耀眼的白热火球和强烈的冲击波，向四周扩散。",
@@ -434,7 +434,7 @@
     "land_extra": "",
     "ocean_extra": "空中爆炸产生的冲击波和强风在海面引发异常波浪，预计海啸高度可达{{tsunami_h}}米，对沿海地区构成威胁。",
     "visual_cue": "橙红火球照亮海天，冲击波环扩散",
-    "warning_note": "L2级别，E在1e6~1e9吨TNT之间，适用于空中解体的中等能量事件，可能产生局部海啸。"
+    "warning_note": "L2级别，E在1e5~1e9吨TNT之间，适用于空中解体的中等能量事件，可能产生局部海啸。"
   },
   {
     "rule_id": "L2-airburst-rock-ocean-G3",
@@ -443,7 +443,7 @@
     "material": "rock",
     "target": "ocean",
     "angle_group": "G3",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一枚直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度、{{angle}}°的陡峭角度切入地球大气层。由于入射角接近垂直，天体在高层大气中经历了剧烈的压缩加热，在约{{breakup_altitude}}公里的高空发生解体。最终仅有{{remain_mass_ratio}}的质量残余到达低空，但绝大部分能量在空气中释放，形成强烈的空中冲击波和热辐射。",
@@ -462,7 +462,7 @@
     "material": "iron",
     "target": "land",
     "angle_group": "G1",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米、速度{{velocity}}公里/秒的铁陨石以浅角度斜掠大气层，由于铁质结构致密，其抗烧蚀能力较强，但浅角度入射使得能量在高层大气中横向扩散，未能深入低空。在{{breakup_altitude}}公里高空，主体发生剧烈解体，剩余质量仅为初始的{{remain_mass_ratio}}，释放出相当于{{final_tnt}}TNT的能量。",
@@ -472,7 +472,7 @@
     "land_extra": "陆地上，冲击波可能造成大范围玻璃破碎、树木倒伏，但无直接高空解体冲击波扩散。",
     "ocean_extra": "",
     "visual_cue": "高空耀眼光球，横向冲击波",
-    "warning_note": "E在1e6~1e9吨TNT区间，L2级别，适用于铁陨石浅角度空爆事件，无地面空中冲击。"
+    "warning_note": "E在1e5~1e9吨TNT区间，L2级别，适用于铁陨石浅角度空爆事件，无地面空中冲击。"
   },
   {
     "rule_id": "L2-airburst-iron-land-G2",
@@ -481,7 +481,7 @@
     "material": "iron",
     "target": "land",
     "angle_group": "G2",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一枚直径约{{diameter}}米的铁质陨石以{{velocity}}公里/秒的速度、{{angle}}°的倾角切入大气层。由于其致密坚固的材质，大部分星体在穿越大气层时并未完全烧蚀，最终仍有{{remain_mass_ratio}}的质量残余，在约{{breakup_altitude}}公里的高空发生剧烈空爆。爆炸当量相当于{{final_tnt}}TNT，迸发出耀眼的火球与冲击波，向四周扩散。",
@@ -491,7 +491,7 @@
     "land_extra": "在陆地，冲击波掀翻建筑物屋顶，震碎大范围玻璃窗，森林边缘树木被拦腰折断，并可能引发局部地震与火灾。",
     "ocean_extra": "",
     "visual_cue": "高空火球与冲击波扩散",
-    "warning_note": "适用于L2级别高空空爆事件（E≥1.0e+06吨TNT，E<1.0e+09吨TNT），铁质陨石，陆地目标，中等倾角。"
+    "warning_note": "适用于L2级别高空空爆事件（E≥1.0e+05吨TNT，E<1.0e+09吨TNT），铁质陨石，陆地目标，中等倾角。"
   },
   {
     "rule_id": "L2-airburst-iron-land-G3",
@@ -500,7 +500,7 @@
     "material": "iron",
     "target": "land",
     "angle_group": "G3",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一枚直径约{{diameter}}米的铁质小行星以{{velocity}}公里/秒的速度近乎垂直切入大气层，入射角约{{angle}}度。由于铁陨石结构致密，在穿越大气层时虽部分烧蚀，仍有约{{remain_mass_ratio}}的质量保留，最终在海拔{{breakup_altitude}}公里处发生剧烈空爆，释放出相当于{{final_tnt}}TNT的能量，形成一个巨大的空中火球。",
@@ -519,7 +519,7 @@
     "material": "iron",
     "target": "ocean",
     "angle_group": "G1",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗铁陨石以浅角度斜掠入大气层，因高速压缩空气而剧烈升温。尽管铁质天体结构致密，但大气摩擦仍使其表面熔融剥落，在约{{breakup_altitude}}公里的高度发生解体。最终仅{{remain_mass_ratio}}的质量残存，其余部分化作无数碎片消散于高空。",
@@ -529,7 +529,7 @@
     "land_extra": "",
     "ocean_extra": "爆炸引发局部海面扰动，可能产生小型海啸，预计浪高{{tsunami_h}}米。",
     "visual_cue": "斜掠火球划过天际，海面沸腾",
-    "warning_note": "适用于E在1.0e+06至1.0e+09吨TNT之间、铁质天体、浅角度空爆于海洋的事件。"
+    "warning_note": "适用于E在1.0e+05至1.0e+09吨TNT之间、铁质天体、浅角度空爆于海洋的事件。"
   },
   {
     "rule_id": "L2-airburst-iron-ocean-G2",
@@ -538,7 +538,7 @@
     "material": "iron",
     "target": "ocean",
     "angle_group": "G2",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的铁质小行星以{{velocity}}公里/秒的速度、{{angle}}度角斜掠入大气层。由于其致密坚固，主体在约{{breakup_altitude}}公里高空才发生剧烈解体，剩余质量比例{{remain_mass_ratio}}。尽管未能触及海面，但巨大的动能转化为猛烈的空中爆炸，释放出相当于{{final_tnt}}TNT的能量，形成耀眼火球与强烈的冲击波。",
@@ -548,7 +548,7 @@
     "land_extra": "",
     "ocean_extra": "空爆引发的强烈气压变化可能诱发局地海啸，预计浪高可达{{tsunami_h}}米，对沿海地区构成威胁。",
     "visual_cue": "耀目白炽火球撕裂海空",
-    "warning_note": "适用于L2级别、当量在1e6至1e9吨TNT之间的海洋上空铁陨石空爆事件，注意避免与地表撞击混淆。"
+    "warning_note": "适用于L2级别、当量在1e5至1e9吨TNT之间的海洋上空铁陨石空爆事件，注意避免与地表撞击混淆。"
   },
   {
     "rule_id": "L2-airburst-iron-ocean-G3",
@@ -557,7 +557,7 @@
     "material": "iron",
     "target": "ocean",
     "angle_group": "G3",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一枚铁质小行星以近垂直角度高速冲入大气层，其致密结构在空气阻力下剧烈摩擦，于高空{{breakup_altitude}}公里处发生强烈解体。尽管铁质天体抗烧蚀能力较强，但在G3陡角度下能量纵向集中，最终在大气层中爆炸释放，仅剩{{remain_mass_ratio}}的残骸碎片散落。爆炸瞬间形成耀眼火球，冲击波以超音速向四周扩散，海面掀起巨浪，但未形成空中冲击。",
@@ -567,7 +567,7 @@
     "land_extra": "",
     "ocean_extra": "空爆产生的气压骤变可能引发局部海啸，预计近岸浪高可达{{tsunami_h}}米，对沿海低洼区域构成威胁。",
     "visual_cue": "高空爆炸绽放白热火球",
-    "warning_note": "E在1e6~1e9吨TNT之间，L2级别，铁陨石海洋空爆事件，G3陡角入射，无地面空中冲击。"
+    "warning_note": "E在1e5~1e9吨TNT之间，L2级别，铁陨石海洋空爆事件，G3陡角入射，无地面空中冲击。"
   },
   {
     "rule_id": "L2-surface-ice-land-G1",
@@ -576,7 +576,7 @@
     "material": "ice",
     "target": "land",
     "angle_group": "G1",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的冰彗星以{{velocity}}公里/秒的速度、{{angle}}度浅角斜掠大气层。由于冰质结构疏松，它在{{breakup_altitude}}公里高空已损失约{{remain_mass_ratio}}的质量，但仍有残余碎片撞击地面，形成一个规模可观的撞击坑。撞击瞬间释放约{{final_tnt}}TNT当量的能量，产生强烈的冲击波和热辐射。",
@@ -586,7 +586,7 @@
     "land_extra": "撞击点附近的建筑物玻璃碎裂、墙体开裂，森林边缘树木被冲击波拦腰折断，地面出现明显震动，部分区域可能引发局部地震。",
     "ocean_extra": "",
     "visual_cue": "浅角撞击掀起漫天尘柱",
-    "warning_note": "适用于E在1e6~1e9吨TNT之间、浅角度地表撞击的冰彗星事件，L2级别，影响范围有限。"
+    "warning_note": "适用于E在1e5~1e9吨TNT之间、浅角度地表撞击的冰彗星事件，L2级别，影响范围有限。"
   },
   {
     "rule_id": "L2-surface-ice-land-G2",
@@ -595,7 +595,7 @@
     "material": "ice",
     "target": "land",
     "angle_group": "G2",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的冰彗星以{{velocity}}公里/秒的速度冲入大气层。由于冰质结构疏松，它在高空就开始剧烈烧蚀，但仍有约{{remain_mass_ratio}}的质量存留至解体高度{{breakup_altitude}}公里处。随着一声闷响，它最终以{{angle}}度的倾角撞击地面，激起大量冰尘与碎屑，冲击波与热辐射瞬间席卷周围区域。",
@@ -605,7 +605,7 @@
     "land_extra": "撞击点附近的建筑玻璃窗瞬间碎裂，森林边缘的树木被冲击波拦腰折断，地面出现明显的震动，部分老旧房屋的墙体产生裂缝。扬起的尘埃与冰雾混合，导致能见度骤降。",
     "ocean_extra": "",
     "visual_cue": "白色冰雾蘑菇云升腾",
-    "warning_note": "E介于1.0e+06至1.0e+09吨TNT，L2级别，适用于冰质天体中等角度陆地撞击事件，注意冰体可能引发局部火球与冰尘效应。"
+    "warning_note": "E介于1.0e+05至1.0e+09吨TNT，L2级别，适用于冰质天体中等角度陆地撞击事件，注意冰体可能引发局部火球与冰尘效应。"
   },
   {
     "rule_id": "L2-surface-ice-land-G3",
@@ -614,7 +614,7 @@
     "material": "ice",
     "target": "land",
     "angle_group": "G3",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的冰彗星以{{angle}}°的陡峭角度高速撞向陆地，速度高达{{velocity}}公里/秒。由于冰质结构疏松，它在高空已部分解体，但仍有{{remain_mass_ratio}}的质量残留，并在{{breakup_altitude}}公里的高度发生剧烈碎裂。最终，主体冰核砸入地面，形成巨大的撞击坑，瞬间释放出相当于{{final_tnt}}TNT的能量，冲击波与热浪席卷方圆数公里。",
@@ -624,7 +624,7 @@
     "land_extra": "陆地上，撞击点附近森林瞬间被点燃，形成大面积火海；建筑物在冲击波中倒塌，地面剧烈震动如同强震，裂缝延伸数公里，扬尘遮天蔽日。",
     "ocean_extra": "",
     "visual_cue": "白色冰火球砸地，蘑菇云腾起",
-    "warning_note": "适用于L2级（1e6~1e9吨TNT）、冰质天体、陆地、陡角度（60~90°）地表撞击事件，注意冰质易碎裂，能量释放更分散。"
+    "warning_note": "适用于L2级（1e5~1e9吨TNT）、冰质天体、陆地、陡角度（60~90°）地表撞击事件，注意冰质易碎裂，能量释放更分散。"
   },
   {
     "rule_id": "L2-surface-ice-ocean-G1",
@@ -633,7 +633,7 @@
     "material": "ice",
     "target": "ocean",
     "angle_group": "G1",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的冰彗星以{{velocity}}公里/秒的速度斜掠入大气层，入射角约{{angle}}度。由于冰质结构疏松，它在高层大气中便剧烈烧蚀，在{{breakup_altitude}}公里的高度发生解体，剩余质量仅为初始的{{remain_mass_ratio}}。残余碎块以低角度划过天际，最终坠入海洋，激起巨大的水柱和冲击波。",
@@ -643,7 +643,7 @@
     "land_extra": "",
     "ocean_extra": "撞击引发海啸，预计最大波高可达{{tsunami_h}}米，对沿海地区构成威胁。",
     "visual_cue": "白色蒸汽柱腾空而起",
-    "warning_note": "E在1e6~1e9吨TNT，L2级，适用于低角度冰质天体海洋撞击事件。"
+    "warning_note": "E在1e5~1e9吨TNT，L2级，适用于低角度冰质天体海洋撞击事件。"
   },
   {
     "rule_id": "L2-surface-ice-ocean-G2",
@@ -652,7 +652,7 @@
     "material": "ice",
     "target": "ocean",
     "angle_group": "G2",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的冰彗星以{{velocity}}公里/秒的速度闯入地球大气层。由于冰质结构疏松，它在高空便发生剧烈烧蚀，在{{breakup_altitude}}公里高度处主体崩解，仅剩{{remain_mass_ratio}}的质量继续坠向海面。最终，残体以{{angle}}度的标准倾斜角度砸入海洋，激起冲天水柱，爆炸当量相当于{{final_tnt}}TNT。",
@@ -671,7 +671,7 @@
     "material": "ice",
     "target": "ocean",
     "angle_group": "G3",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的冰彗星以{{velocity}}公里/秒的速度、{{angle}}°的陡峭角度切入大气层，在大气中经历剧烈的烧蚀与剥落，最终仍有约{{remain_mass_ratio}}的质量残存，并在约{{breakup_altitude}}公里的高空发生主体解体和爆炸，释放出相当于{{final_tnt}}TNT的能量。由于近垂直入射，能量高度集中，主体碎片直接贯穿大气层，砸入海洋表面，激起剧烈海啸和冲击波。",
@@ -690,7 +690,7 @@
     "material": "rock",
     "target": "land",
     "angle_group": "G1",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度斜掠进入大气层，入射角约{{angle}}度。由于角度浅，它在高空经历了漫长的摩擦与烧蚀，剩余质量仅为原始的{{remain_mass_ratio}}，在约{{breakup_altitude}}公里的高度发生部分解体。但仍有相当质量的碎片继续飞向地面，最终以低角度撞击陆地，形成显著的撞击坑。",
@@ -700,7 +700,7 @@
     "land_extra": "撞击点附近的森林可能被冲击波掀倒，地面出现明显震动，震感可传至数十公里外。",
     "ocean_extra": "",
     "visual_cue": "低角度火球划过天际，地面尘土飞扬",
-    "warning_note": "E介于100万吨TNT至10亿吨TNT之间，L2级别，适用于浅角度岩石陨石地表撞击事件，注意冲击波和地面震动。"
+    "warning_note": "E介于10万吨TNT至10亿吨TNT之间，L2级别，适用于浅角度岩石陨石地表撞击事件，注意冲击波和地面震动。"
   },
   {
     "rule_id": "L2-surface-rock-land-G2",
@@ -709,7 +709,7 @@
     "material": "rock",
     "target": "land",
     "angle_group": "G2",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度、{{angle}}°的角度切入大气层。由于材质为岩石，它在高空发生了部分解体，但仍有约{{remain_mass_ratio}}的质量存留至约{{breakup_altitude}}公里的高度。最终，这块岩石以标准倾斜轨迹砸向地面，撞击点瞬间爆发出相当于{{final_tnt}}TNT的能量，形成一个明显的撞击坑。",
@@ -719,7 +719,7 @@
     "land_extra": "陆地表面遭受严重破坏：撞击点附近的建筑物在{{blast_core_r}}米半径内完全倒塌，森林在{{burn_r}}米半径内被热辐射引燃，地面震动等效于一场地震，震感波及周围数十公里。",
     "ocean_extra": "",
     "visual_cue": "橙红火球砸向地面，烟柱升腾",
-    "warning_note": "适用于L2级岩石陨石地表撞击陆地场景（E=1.0e+06~1.0e+09吨TNT），标准倾斜入射角（30°~60°），可能引发局部地震和火灾。"
+    "warning_note": "适用于L2级岩石陨石地表撞击陆地场景（E=1.0e+05~1.0e+09吨TNT），标准倾斜入射角（30°~60°），可能引发局部地震和火灾。"
   },
   {
     "rule_id": "L2-surface-rock-land-G3",
@@ -728,7 +728,7 @@
     "material": "rock",
     "target": "land",
     "angle_group": "G3",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一块直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度，以{{angle}}°的陡峭角度直插大地。由于角度接近垂直，大气阻力对其减速效果有限，陨石以极高动能穿透大气层，最终约有{{remain_mass_ratio}}的质量残存至低空，在约{{breakup_altitude}}公里的高度发生剧烈解体，但核心碎片仍以超高速砸向地表。撞击瞬间释放出相当于{{final_tnt}}TNT的能量，形成一个巨大的火球，地面剧烈震动，冲击波以超音速向外扩散。",
@@ -738,7 +738,7 @@
     "land_extra": "撞击点周围数十公里内的建筑物将遭受毁灭性破坏，玻璃幕墙瞬间破碎，砖石结构倒塌；森林区域可能引发大面积火灾，同时强烈地震波会在地表传播，造成地面裂缝和山体滑坡。",
     "ocean_extra": "",
     "visual_cue": "炽白火球腾空，蘑菇云升腾",
-    "warning_note": "适用于L2级地表撞击（能量1e6~1e9吨TNT），岩石材质、陆地目标、陡角入射，可能造成区域性灾害。"
+    "warning_note": "适用于L2级地表撞击（能量1e5~1e9吨TNT），岩石材质、陆地目标、陡角入射，可能造成区域性灾害。"
   },
   {
     "rule_id": "L2-surface-rock-ocean-G1",
@@ -747,7 +747,7 @@
     "material": "rock",
     "target": "ocean",
     "angle_group": "G1",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度切入大气层，入射角约为{{angle}}度。由于结构中等且角度浅斜，它在大气中经历了显著的烧蚀，但仍保留了约{{remain_mass_ratio}}的质量，并在约{{breakup_altitude}}公里的高度发生部分解体。残余天体以低角度斜掠海面，最终坠入海洋，激起巨大的水柱。",
@@ -757,7 +757,7 @@
     "land_extra": "",
     "ocean_extra": "撞击引发的海啸波高预计可达{{tsunami_h}}米，将向周边海岸传播，造成沿海地区的洪水灾害。",
     "visual_cue": "海面升起巨大水柱",
-    "warning_note": "L2级别，E介于1.0e+06至1.0e+09吨TNT，适用于岩石陨石低角度撞击海洋的事件。"
+    "warning_note": "L2级别，E介于1.0e+05至1.0e+09吨TNT，适用于岩石陨石低角度撞击海洋的事件。"
   },
   {
     "rule_id": "L2-surface-rock-ocean-G2",
@@ -766,7 +766,7 @@
     "material": "rock",
     "target": "ocean",
     "angle_group": "G2",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度、{{angle}}°的角度斜插进入地球大气层。在穿越大气层的过程中，剧烈的摩擦使陨石表面温度骤升，其质量在烧蚀中逐渐减少，最终仅有{{remain_mass_ratio}}的质量残存下来，在{{breakup_altitude}}公里的高度发生了一次剧烈的解体。陨石块体未能完全烧毁，带着残余动能砸向海面，瞬间激起巨大的水柱和冲击波。",
@@ -776,7 +776,7 @@
     "land_extra": "",
     "ocean_extra": "撞击引发的海啸波高达到{{tsunami_h}}米，以每小时数百公里的速度向周边海岸线推进，将在数小时内抵达陆地，造成沿海地区的严重破坏。",
     "visual_cue": "巨大水柱冲天而起",
-    "warning_note": "E在1.0e+06至1.0e+09吨TNT之间，L2级别，适用于岩石陨石撞击海洋的中小型事件，关注海啸与水下冲击效应。"
+    "warning_note": "E在1.0e+05至1.0e+09吨TNT之间，L2级别，适用于岩石陨石撞击海洋的中小型事件，关注海啸与水下冲击效应。"
   },
   {
     "rule_id": "L2-surface-rock-ocean-G3",
@@ -785,7 +785,7 @@
     "material": "rock",
     "target": "ocean",
     "angle_group": "G3",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的岩石陨石以{{velocity}}公里/秒的速度，在{{angle}}度陡角下近乎垂直地冲向海洋。大气层中约{{ablation_ratio_pct}}的质量被烧蚀，主体在{{breakup_altitude}}公里高度才发生部分解体，但核心仍保持完整，最终猛烈撞击海面。",
@@ -804,7 +804,7 @@
     "material": "iron",
     "target": "land",
     "angle_group": "G1",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗铁质陨石以浅角度斜掠入大气层，致密的铁核抵抗了高温烧蚀，最终有 {{remain_mass_ratio}} 的质量残留并穿透至 {{breakup_altitude}} 公里的低空。它并未完全解体，而是带着残余动能猛烈撞击地面，掀起一场局部性灾害。",
@@ -823,7 +823,7 @@
     "material": "iron",
     "target": "land",
     "angle_group": "G2",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗铁质小行星以标准倾斜角度贯穿大气层，由于铁质结构的致密坚固，它抵抗住了剧烈的空气摩擦，仅烧蚀掉小部分质量，残存质量比例保持在{{remain_mass_ratio}}左右。它在{{breakup_altitude}}千米的高度仍保持完整结构，最终以极高的速度撞击地面。",
@@ -833,7 +833,7 @@
     "land_extra": "陆地上，撞击点周围的建筑在冲击波中化为废墟，森林被点燃，大地剧烈震颤，裂缝从坑缘向外延伸，造成大面积地表破坏。",
     "ocean_extra": "",
     "visual_cue": "橙红火球撞击地面，尘土冲天",
-    "warning_note": "E≥100万吨TNT，L2级别，适用于铁质天体标准角度陆地撞击事件。"
+    "warning_note": "E≥10万吨TNT，L2级别，适用于铁质天体标准角度陆地撞击事件。"
   },
   {
     "rule_id": "L2-surface-iron-land-G3",
@@ -842,7 +842,7 @@
     "material": "iron",
     "target": "land",
     "angle_group": "G3",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的铁陨石以{{velocity}}公里/秒的速度，以约{{angle}}°的陡角切入大气层。由于铁质结构极其致密坚固，它在高层大气中几乎未发生显著解体，最终仍有{{remain_mass_ratio}}的质量残余，直至在{{breakup_altitude}}公里高度才发生剧烈空爆，但主体仍保持完整并高速砸向地面。",
@@ -852,7 +852,7 @@
     "land_extra": "陆地上，撞击坑边缘的岩层被剧烈挤压变形，产生强烈地震，震感波及数百公里。森林地带引发大面积山火，城市基础设施瘫痪，通讯中断。",
     "ocean_extra": "",
     "visual_cue": "巨型蘑菇云腾空而起，地面剧烈震颤",
-    "warning_note": "E介于1e6~1e9吨TNT，L2级，铁陨石陡角地表撞击，适用于陆地目标，注意撞击坑与强震效应。"
+    "warning_note": "E介于1e5~1e9吨TNT，L2级，铁陨石陡角地表撞击，适用于陆地目标，注意撞击坑与强震效应。"
   },
   {
     "rule_id": "L2-surface-iron-ocean-G1",
@@ -861,7 +861,7 @@
     "material": "iron",
     "target": "ocean",
     "angle_group": "G1",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一枚直径约{{diameter}}米的铁质陨石以{{velocity}}公里/秒的速度、{{angle}}度浅角斜掠大气层。尽管大部分质量在穿越时被烧蚀，仍有约{{remain_mass_ratio}}的质量幸存，最终在高度{{breakup_altitude}}公里处发生局部解体，但核心碎片仍以高速砸入海洋。爆炸当量约为{{final_tnt}}TNT，激起巨大的水柱和冲击波。",
@@ -871,7 +871,7 @@
     "land_extra": "",
     "ocean_extra": "撞击引发大规模海啸，预计近岸浪高可达{{tsunami_h}}米，对沿海地区构成严重威胁。",
     "visual_cue": "海面激起巨大水墙",
-    "warning_note": "E在1.0e+06至1.0e+09吨TNT之间，L2级别，适用于铁陨石海洋浅角撞击事件，注意海啸风险。"
+    "warning_note": "E在1.0e+05至1.0e+09吨TNT之间，L2级别，适用于铁陨石海洋浅角撞击事件，注意海啸风险。"
   },
   {
     "rule_id": "L2-surface-iron-ocean-G2",
@@ -880,7 +880,7 @@
     "material": "iron",
     "target": "ocean",
     "angle_group": "G2",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一枚直径约{{diameter}}米的铁质陨石以{{velocity}}公里/秒的速度，以{{angle}}°的角度斜插进入大气层。由于铁陨石致密坚固，抗烧蚀能力极强，它损失了{{ablation_ratio_pct}}的质量，便在海拔{{breakup_altitude}}公里处发生低空解体。但主体仍保持完整，裹挟着高温与巨大动能，直扑洋面。",
@@ -890,7 +890,7 @@
     "land_extra": "",
     "ocean_extra": "撞击引发的海啸波将以{{tsunami_h}}米的高度向四周扩散，对沿海地区构成严重威胁。",
     "visual_cue": "熔融铁块坠海，巨浪滔天",
-    "warning_note": "E在1e6~1e9吨TNT之间，L2级别，适用于铁陨石海洋地表撞击事件，需关注海啸威胁。"
+    "warning_note": "E在1e5~1e9吨TNT之间，L2级别，适用于铁陨石海洋地表撞击事件，需关注海啸威胁。"
   },
   {
     "rule_id": "L2-surface-iron-ocean-G3",
@@ -899,7 +899,7 @@
     "material": "iron",
     "target": "ocean",
     "angle_group": "G3",
-    "e_min": 1000000.0,
+    "e_min": 100000.0,
     "e_max": 1000000000.0,
     "disaster_title": "小型灾害",
     "main_text": "一颗直径约{{diameter}}米的铁质陨石以{{velocity}}公里/秒的速度，以近垂直角度（{{angle}}°）猛烈砸入海洋。尽管大气烧蚀使其质量仅剩{{remain_mass_ratio}}，但铁陨石的致密结构使其在{{breakup_altitude}}公里高度仍保持完整，最终撞击海面，激起滔天巨浪。",
@@ -909,7 +909,7 @@
     "land_extra": "",
     "ocean_extra": "撞击引发大规模海啸，预计浪高可达{{tsunami_h}}米，将对沿海地区造成毁灭性影响。",
     "visual_cue": "巨型水柱冲天而起，海啸巨浪席卷",
-    "warning_note": "E介于10^6~10^9吨TNT，L2级别，适用于铁陨石海洋地表撞击事件。"
+    "warning_note": "E介于10^5~10^9吨TNT，L2级别，适用于铁陨石海洋地表撞击事件。"
   },
   {
     "rule_id": "L3-airburst-ice-land-G1",

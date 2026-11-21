@@ -265,7 +265,9 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
             "v_kms": terminal_v / 1000.0,
             "m_kg": terminal_m,
             "e_kinetic_j": terminal_e_kin,
-            "impact_happened": h <= 0,
+            # 只有带着可观能量落地才算“撞击”；烧蚀后残渣软着陆（<1% 能量）
+            # 归为烧毁/空爆，避免 5–10 m 小天体被误判成地表撞击
+            "impact_happened": h <= 0 and terminal_e_kin > initial_total_e * 0.01,
         },
         "breakup": {
             "triggered": breakup_triggered,

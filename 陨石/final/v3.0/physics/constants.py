@@ -36,7 +36,7 @@ ATMOSPHERE_TOP = 200_000.0      # 大气模型顶，米（200千米）
 # 流星体气动系数（Chyba et al. 1993 / ReVelle 1979 推荐区间）
 DRAG_COEFFICIENT = 1.0          # 球体阻力系数 C_D（无量纲）
 HEAT_TRANSFER_COEFF = 0.1       # 传热系数 C_H（无量纲）
-ABLATION_HEAT = 5.0e6           # 烧蚀热，焦耳 / 千克
+ABLATION_HEAT = 2.5e6           # 烧蚀热，焦耳 / 千克（按通古斯/车里雅宾斯克标定）
 PANCAKE_FACTOR = 5.0            # 解体后横截面瞬时放大倍数（pancake 模型，无量纲）
 
 # ---------------- 撞击目标介质 ----------------
