@@ -1039,7 +1039,7 @@ function setupAnimation(d){
   ANIM.fireTNT=d.release.tnt_tons;
   const ms=d.mode.mode;
   if(ms.includes('空爆')||ms.includes('烧毁')){
-    const alt=d.mode.breakup_altitude_km||d.trajectory.energy_peak_h_km;
+    const alt=d.mode.release_altitude_km||d.mode.breakup_altitude_km||d.trajectory.energy_peak_h_km;
     let best=null,bd=1e9;
     for(const s of ANIM.samples){const dd=Math.abs(s.h_km-alt);if(dd<bd){bd=dd;best=s;}}
     ANIM.explodeT=best?best.t:ANIM.totalT*0.5;

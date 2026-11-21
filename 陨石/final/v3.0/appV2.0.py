@@ -17,14 +17,16 @@ import re
 from flask import Flask, request, jsonify, render_template
 
 from simulation import run_simulation
+from physics.classify import DISASTER_LEVELS
 
 app = Flask(__name__)
-app.config['JSON_AS_ASCII'] = False
+app.json.ensure_ascii = False  # Flask 3 起 JSON_AS_ASCII 配置已失效
 
 
 # ============== 加载 impact_templates_v1.json ==============
-_DB_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DB_PATH = os.path.join(_DB_DIR, 'Aug12', 'impact_templates_v1.json')
+# 模板库随程序一起发布（data/ 目录），保证 v3.0 目录可独立运行
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(_BASE_DIR, 'data', 'impact_templates_v1.json')
 IMPACT_TEMPLATES = []
 
 def load_impact_templates():
@@ -42,13 +44,8 @@ load_impact_templates()
 
 
 # ============== 等级 / 模式 / 材质 / 目标 / 角度 映射 ==============
-LEVEL_BOUNDS = [
-    ("L1", 0.0,   1e6),
-    ("L2", 1e6,   1e9),
-    ("L3", 1e9,   1e12),
-    ("L4", 1e12,  1e15),
-    ("L5", 1e15,  9e18),
-]
+# 与 physics.classify.DISASTER_LEVELS 共用同一套阈值
+LEVEL_BOUNDS = [(code, lo, hi) for code, lo, hi, _title, _desc in DISASTER_LEVELS]
 
 MATERIAL_CN2EN = {
     '冰彗星': 'ice', 'ice': 'ice',
@@ -164,6 +161,7 @@ def _fmt_tnt(tons):
 # ============== 模板插槽填充 ==============
 SLOT_KEYS = [
     "diameter", "velocity", "angle", "final_tnt", "remain_mass_ratio",
+    "ablation_ratio_pct",
     "breakup_altitude", "fireball_r", "blast_core_r", "blast_outer_r",
     "burn_r", "crater_r",
 ]
@@ -182,6 +180,9 @@ def build_slot_values(result):
     breakup_alt = mode_info.get("breakup_altitude_km")
     if breakup_alt is None:
         breakup_alt = traj.get("breakup", {}).get("altitude_km", 0)
+    # 空爆场景对读者有意义的是“能量集中释放高度”，而非初始解体触发高度
+    if "空爆" in mode_info.get("mode", "") and mode_info.get("release_altitude_km"):
+        breakup_alt = mode_info["release_altitude_km"]
 
     ablation_ratio = mode_info.get("ablation_ratio", traj.get("ablation_ratio", 0))
     remain_ratio = max(1.0 - ablation_ratio, 0.0)
@@ -195,6 +196,7 @@ def build_slot_values(result):
         "angle":            _fmt_num(echo.get("angle_deg", 0), 1),
         "final_tnt":        _fmt_tnt(release.get("tnt_tons", 0)),
         "remain_mass_ratio": f"{remain_ratio*100:.1f}%",
+        "ablation_ratio_pct": f"{max(0.0, min(ablation_ratio, 1.0))*100:.1f}%",
         "breakup_altitude": _fmt_num(breakup_alt, 2),
         "fireball_r":       _fmt_num(thermal.get("fireball_radius_km", 0)),
         "blast_core_r":     _fmt_num(shock.get("core_radius_km", 0)),
@@ -315,9 +317,8 @@ def answer_science_question(question, context=None):
     # context 是 simulation 结果
     result = context
     tmpl = lookup_template_by_result(result)
-    if not tmpl:
-        return {"content": "模板库中未找到匹配的模板。"}
-    filled = fill_template(tmpl, result)
+    # 模板缺失时仍用 physics 数据回答，不再直接放弃
+    filled = fill_template(tmpl, result) if tmpl else {}
 
     init = result.get("initial", {})
     release = result.get("release", {})
@@ -328,7 +329,9 @@ def answer_science_question(question, context=None):
     q = question
     if any(k in q for k in ["坑", "crater", "撞击坑", "直径"]):
         d = crater_info.get("crater_diameter_km", 0)
-        return {"content": f"关于撞击坑：直径约 {_fmt_num(d)} km"}
+        if d and d > 0:
+            return {"content": f"关于撞击坑：直径约 {_fmt_num(d)} km"}
+        return {"content": crater_info.get("note") or "当前为无实体地撞，未形成撞击坑"}
     elif any(k in q for k in ["能量", "energy", "威力", "TNT", "当量"]):
         return {"content": f"关于撞击能量：\n{_build_energy_comparison(init)}\n释放能量：{_fmt_tnt(release.get('tnt_tons', 0))} TNT"}
     elif any(k in q for k in ["范围", "range", "破坏", "影响", "半径"]):
@@ -337,9 +340,13 @@ def answer_science_question(question, context=None):
                           f"火球 {_fmt_num(thermal.get('fireball_radius_km', 0))} km，"
                           f"烧伤 {_fmt_num(thermal.get('burn_radius_km', 0))} km"}
     elif any(k in q for k in ["等级", "level", "严重", "危险"]):
-        return {"content": f"当前灾害等级：{filled['disaster_title']}（{filled['level']}）\n\n{filled['main_text']}"}
+        title = filled.get("disaster_title") or result.get("disaster_level", {}).get("level", "未知")
+        code = filled.get("level", result.get("disaster_level", {}).get("code", ""))
+        text = filled.get("main_text", "")
+        return {"content": f"当前灾害等级：{title}（{code}）\n\n{text}".strip()}
     else:
-        return {"content": f"{filled['main_text']}\n\n📊 {_build_energy_comparison(init)}"}
+        text = filled.get("main_text", "（当前参数未匹配到叙事模板）")
+        return {"content": f"{text}\n\n📊 {_build_energy_comparison(init)}"}
 
 
 def parse_natural_language(text):
@@ -361,21 +368,27 @@ def parse_natural_language(text):
     elif any(k in text for k in ['岩', 'rock', 'stone']):
         result['material'] = '岩石陨石'
 
-    m = re.search(r'(\d+)\s*(m|米|km|千米|公里)', text)
-    if m:
-        val = int(m.group(1))
-        unit = m.group(2)
-        if unit in ('km', '千米', '公里'):
-            val *= 1000
-        result['diameter'] = max(5, min(5000, val))
-
-    m = re.search(r'(\d+(?:\.\d+)?)\s*(km/s|km|千米.*秒|马赫)', text)
+    # 速度：必须先解析，且单位必须带“每秒”语义，避免把直径的 km 误读成速度
+    m = re.search(
+        r'(\d+(?:\.\d+)?)\s*(?:km\s*/\s*s|公里\s*/\s*秒|千米\s*/\s*秒|'
+        r'公里每秒|千米每秒|公里/秒|千米/秒|马赫)',
+        text, re.IGNORECASE)
     if m:
         result['velocity'] = max(12, min(70, float(m.group(1))))
 
-    m = re.search(r'(\d+)\s*(°|度|角)', text)
+    # 直径：优先匹配带“直径/大小”的表述，再退回“数字+长度单位”
+    m = re.search(r'(?:直径|大小)\s*(\d+(?:\.\d+)?)\s*(m|米|km|千米|公里)', text)
+    if not m:
+        m = re.search(r'(\d+(?:\.\d+)?)\s*(m|米|km|千米|公里)', text)
     if m:
-        result['angle'] = max(5, min(90, int(m.group(1))))
+        val = float(m.group(1))
+        if m.group(2) in ('km', '千米', '公里'):
+            val *= 1000
+        result['diameter'] = max(5, min(5000, int(val)))
+
+    m = re.search(r'(\d+(?:\.\d+)?)\s*(?:°|度)', text)
+    if m:
+        result['angle'] = max(5, min(90, int(float(m.group(1)))))
 
     if any(k in text for k in ['通古斯', 'tunguska']):
         result['material'] = '岩石陨石'
@@ -405,10 +418,24 @@ def index():
 
 @app.route('/api/simulate', methods=['POST'])
 def api_simulate():
-    params = request.get_json(force=True)
-    params["target"] = "陆地"
-    result = run_simulation(params)
-    return jsonify(result)
+    params = request.get_json(silent=True) or {}
+    try:
+        if params.get("material") not in MATERIAL_CN2EN:
+            raise ValueError("不支持的材质")
+        params["diameter"] = float(params["diameter"])
+        params["velocity"] = float(params["velocity"])
+        params["angle"] = float(params["angle"])
+        if not (5 <= params["diameter"] <= 50000):
+            raise ValueError("直径需在 5–50000 米之间")
+        if not (1 <= params["velocity"] <= 100):
+            raise ValueError("速度需在 1–100 千米/秒之间")
+        if not (5 <= params["angle"] <= 90):
+            raise ValueError("入射角需在 5–90 度之间")
+        params["target"] = "陆地"
+        result = run_simulation(params)
+        return jsonify(result)
+    except (KeyError, TypeError, ValueError) as e:
+        return jsonify({"error": f"参数无效: {e}"}), 400
 
 
 @app.route('/api/ai/narrative', methods=['POST'])

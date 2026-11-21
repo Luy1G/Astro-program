@@ -46,9 +46,12 @@ def run_simulation(params):
     tnt_release_tons = meteoroid.joule_to_tnt_ton(release_e)
     tnt_release_kg = meteoroid.joule_to_tnt_kg(release_e)
 
-    # 5. 撞击坑（仅陆地）
+    # 5. 撞击坑（仅陆地）；使用终端速度、终端质量与实际入射角
     crater_info = crater.compute_crater(
-        diameter, material, velocity, target, release_e, mode_info["mode"]
+        diameter, material,
+        traj["terminal"]["v_kms"], target, release_e, mode_info["mode"],
+        angle_deg=angle,
+        impactor_mass_kg=traj["terminal"]["m_kg"],
     )
 
     # 6. 冲击波（基于真实释放能量，焦耳）

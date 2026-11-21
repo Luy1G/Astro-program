@@ -48,6 +48,7 @@ from .meteoroid import compute_mass, compute_radius_from_mass
 G0 = 9.81                          # 海平面重力加速度 m/s²
 R_EARTH = 6_371_000.0              # 地球半径 m
 ABLATION_SPEED_CUTOFF = 3000.0     # 烧蚀有效速度下限 m/s（暗飞行阶段阈值）
+MAX_STEPS = 500_000                # 积分步数上限（防止掠射弹道长时间不收敛）
 
 
 def _gravity_at_altitude(h):
@@ -97,7 +98,7 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
 
     t = 0.0
     samples = []
-    energy_atm = 0.0          # 累积大气能量沉积 J（仅阻力做功）
+    energy_atm = 0.0          # 累积阻力做功 J（气动加热/冲击波能量）
     energy_profile = []       # [(h_km, cumulative_energy_J)] 用于动画
     e_peak_dt_rate = 0.0      # 峰值能量沉积率 W
     e_peak_h = 0.0            # 峰值能量沉积高度 m
@@ -109,7 +110,7 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
     pancake_mult = 1.0       # 解体后横截面放大倍数（仅触发一次）
 
     step = 0
-    while h > 0 and m > m0 * 0.001:
+    while h > 0 and m > m0 * 0.001 and step < MAX_STEPS:
         # ───── 1. 当前大气与重力环境 ─────
         rho_a = air_density_with_gradient(h)
         g = _gravity_at_altitude(h)
@@ -212,7 +213,7 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
 
     # ───── 地面终点插值（优化跨地面步长精度）─────
     #  保留原有补采样机制，保证轨迹与爆炸点严格对齐
-    if h <= 0 and terminal_m > m0 * 0.001:
+    if h <= 0:
         if samples:
             s = samples[-1]
             h_last = s["h_km"] * 1000.0
@@ -243,9 +244,16 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
         })
         energy_profile.append((0.0, energy_atm))
 
-    # ───── 三类能量分配占比（对标 NASA 数据口径）─────
-    atm_ratio = energy_atm / initial_e_kin if initial_e_kin > 0 else 0.0
-    ground_ratio = terminal_e_kin / initial_e_kin if initial_e_kin > 0 else 0.0
+    # ───── 能量账目（初始动能 = 大气沉积 + 地面终端动能）─────
+    #  用初末动能差结算大气沉积量；前向欧拉在高阻阶段会有少量数值增能，
+    #  因此把地面占比限制在 [0,1]，并由它反推大气占比，保证两者严格相加为 1。
+    if initial_e_kin > 0:
+        ground_ratio = min(max(terminal_e_kin / initial_e_kin, 0.0), 1.0)
+    else:
+        ground_ratio = 0.0
+    atm_ratio = 1.0 - ground_ratio
+    energy_deposited = initial_e_kin * atm_ratio
+    energy_ablated = max(energy_deposited - energy_atm, 0.0)
 
     return {
         "samples": samples,
@@ -254,7 +262,7 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
             "v_kms": terminal_v / 1000.0,
             "m_kg": terminal_m,
             "e_kinetic_j": terminal_e_kin,
-            "impact_happened": h <= 0 and terminal_m > m0 * 0.001,
+            "impact_happened": h <= 0,
         },
         "breakup": {
             "triggered": breakup_triggered,
@@ -264,8 +272,10 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
         },
         "ablation_kg": m0 - terminal_m,
         "ablation_ratio": (m0 - terminal_m) / m0 if m0 > 0 else 0.0,
-        "energy_atm_j": energy_atm,
+        "energy_atm_j": energy_deposited,      # 大气总沉积能量（阻力做功 + 烧蚀带走动能）
         "energy_atm_ratio": atm_ratio,
+        "drag_work_j": energy_atm,             # 其中：阻力做功部分
+        "ablated_energy_j": energy_ablated,    # 其中：烧蚀质量带走部分
         "energy_peak_h_km": e_peak_h / 1000.0,
         "energy_profile": energy_profile,
         "initial": {
@@ -273,12 +283,14 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
             "velocity_kms": velocity_kms,
             "kinetic_energy_j": initial_e_kin,
         },
-        # 三类能量分离与分配占比
+        # 能量分离与分配占比（初始动能 = 大气沉积 + 地面终端动能）
         "energy_distribution": {
-            "initial_kinetic_j": initial_e_kin,       # 初始总动能（真空理论能量）
-            "atmospheric_j": energy_atm,               # 大气沉积能量（空爆/冲击波/热辐射损耗）
+            "initial_kinetic_j": initial_e_kin,        # 初始总动能（真空理论能量）
+            "atmospheric_j": energy_deposited,         # 大气总沉积能量（空爆/冲击波/热辐射）
+            "drag_work_j": energy_atm,                 # 其中：阻力做功
+            "ablated_energy_j": energy_ablated,        # 其中：烧蚀质量带走动能
             "ground_impact_j": terminal_e_kin,         # 地面终端撞击动能（真实落地爆炸当量）
             "atmospheric_ratio": atm_ratio,            # 大气沉积占比
-            "ground_impact_ratio": ground_ratio,        # 地面撞击占比
+            "ground_impact_ratio": ground_ratio,       # 地面撞击占比
         },
     }

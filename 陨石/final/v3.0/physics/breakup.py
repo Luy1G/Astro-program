@@ -37,11 +37,14 @@ def determine_mode(trajectory_result, diameter_m, material_key):
         release_energy = term["e_kinetic_j"]   # 用真实剩余动能
         release_altitude_km = 0.0
     elif triggered:
-        # 纯空爆：解体后未到地面，剩余能量沉积在解体高度附近
+        # 纯空爆：解体后未到地面，能量在低空集中释放
+        # 释放能量 = 初始动能 - 终态残余动能 = 大气总沉积能量
+        # （不能用终态残余动能：此时 99% 以上的能量已在大气中耗散）
         mode = "空爆（通古斯模式）"
         ground_efficiency = 0.85                # 空爆杀伤效率高
-        release_energy = term["e_kinetic_j"]    # 解体后剩余动能（沉积在低空）
-        release_altitude_km = brk["altitude_km"]
+        release_energy = trajectory_result["energy_atm_j"]
+        # 主要能量释放高度取能量沉积峰值高度，比解体触发高度更接近真实空爆位置
+        release_altitude_km = trajectory_result["energy_peak_h_km"]
     else:
         # 烧毁：未触发解体也未触地（极小天体）
         mode = "大气烧毁（无地面影响）"
