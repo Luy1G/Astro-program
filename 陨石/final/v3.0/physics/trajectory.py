@@ -247,12 +247,15 @@ def integrate_trajectory(diameter_m, material_key, velocity_kms,
     # ───── 能量账目（初始动能 = 大气沉积 + 地面终端动能）─────
     #  用初末动能差结算大气沉积量；前向欧拉在高阻阶段会有少量数值增能，
     #  因此把地面占比限制在 [0,1]，并由它反推大气占比，保证两者严格相加为 1。
-    if initial_e_kin > 0:
-        ground_ratio = min(max(terminal_e_kin / initial_e_kin, 0.0), 1.0)
+    # 分母含 200 km 重力势能：否则「落地动能 > 初始动能」的工况（大铁陨石低速）
+    # 会把 ground_ratio 钳到 1、atm 归零，出现 2.5% 的账目缺口
+    initial_total_e = initial_e_kin + m0 * G0 * C.ATMOSPHERE_TOP
+    if initial_total_e > 0:
+        ground_ratio = min(max(terminal_e_kin / initial_total_e, 0.0), 1.0)
     else:
         ground_ratio = 0.0
     atm_ratio = 1.0 - ground_ratio
-    energy_deposited = initial_e_kin * atm_ratio
+    energy_deposited = initial_total_e * atm_ratio
     energy_ablated = max(energy_deposited - energy_atm, 0.0)
 
     return {

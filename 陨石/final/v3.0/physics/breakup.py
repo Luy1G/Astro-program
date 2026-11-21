@@ -27,6 +27,10 @@ def determine_mode(trajectory_result, diameter_m, material_key):
     impact = term["impact_happened"]
     triggered = brk["triggered"]
 
+    # 事件总当量 = 大气中已沉积的能量 + 落地时的剩余动能
+    # 解体后落地时 99% 能量已在大气释放，只看终端动能会低估 1~2 个数量级
+    total_release_e = trajectory_result["energy_atm_j"] + term["e_kinetic_j"]
+
     if impact:
         # 地表撞击（包含解体后碎片撞击）
         if triggered:
@@ -34,7 +38,7 @@ def determine_mode(trajectory_result, diameter_m, material_key):
         else:
             mode = "地表撞击（完整硬撞击）"
         ground_efficiency = 1.0
-        release_energy = term["e_kinetic_j"]   # 用真实剩余动能
+        release_energy = total_release_e
         release_altitude_km = 0.0
     elif triggered:
         # 纯空爆：解体后未到地面，能量在低空集中释放

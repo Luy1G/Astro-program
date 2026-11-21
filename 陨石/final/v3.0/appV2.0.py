@@ -14,6 +14,7 @@ AI 功能由 impact_templates_v1.json 模板库驱动：
 import os
 import json
 import re
+import math
 from flask import Flask, request, jsonify, render_template
 
 from simulation import run_simulation
@@ -190,6 +191,9 @@ def build_slot_values(result):
     crater_d = float(crater_info.get("crater_diameter_km", 0) or 0)
     crater_r = crater_d / 2.0 if crater_d > 0 else 0.0
 
+    release_j = float(release.get("energy_j", 0) or 0)
+    seismic = max(0.0, (math.log10(max(release_j, 1.0)) - 4.8) / 1.5)
+
     return {
         "diameter":         _fmt_num(echo.get("diameter_m", 0)),
         "velocity":         _fmt_num(echo.get("velocity_kms", 0)),
@@ -203,6 +207,7 @@ def build_slot_values(result):
         "blast_outer_r":    _fmt_num(shock.get("outer_radius_km", 0)),
         "burn_r":           _fmt_num(thermal.get("burn_radius_km", 0)),
         "crater_r":         _fmt_num(crater_r),
+        "seismic_magnitude": f"{seismic:.1f}",
     }
 
 

@@ -30,15 +30,22 @@ def classify_disaster(diameter_m, tnt_tons):
 
 
 def observer_damage(observer_distance_km, shock, thermal):
-    """观测点损毁评估：按各破坏区半径从小到大判定，避免大烧伤半径吞掉外围区。"""
+    """观测点损毁评估：核心/次级按冲击波判定，外围区与烧伤区分别判断后合并。
+
+    烧伤半径通常大于外围区半径：若只按半径升序取第一个命中，
+    就会出现「在外围区内、也在 20 km 烧伤半径内，却只报玻璃震碎」的漏报。
+    """
     d = observer_distance_km
-    zones = [
-        (shock["core_radius_km"],      "位于核心摧毁区：地面汽化、完全毁灭"),
-        (shock["secondary_radius_km"], "位于次级区：建筑完全坍塌、林木焚毁"),
-        (thermal["burn_radius_km"],    "位于热辐射烧伤区：三度烧伤、可燃物起火"),
-        (shock["outer_radius_km"],     "位于外围区：玻璃震碎、轻度损毁"),
-    ]
-    for radius, msg in sorted((r, m) for r, m in zones if r and r > 0):
-        if d <= radius:
-            return msg
+    if d <= shock["core_radius_km"]:
+        return "位于核心摧毁区：地面汽化、完全毁灭"
+    if d <= shock["secondary_radius_km"]:
+        return "位于次级区：建筑完全坍塌、林木焚毁"
+
+    effects = []
+    if d <= shock["outer_radius_km"]:
+        effects.append("外围区：玻璃震碎、轻度损毁")
+    if d <= thermal["burn_radius_km"]:
+        effects.append("热辐射烧伤区：三度烧伤、可燃物起火")
+    if effects:
+        return "位于" + "；同时".join(effects)
     return "位于安全区：基本无影响"
