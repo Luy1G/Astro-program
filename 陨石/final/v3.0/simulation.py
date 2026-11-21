@@ -39,7 +39,7 @@ def run_simulation(params):
 
     # 3. 空爆/地撞判定（基于 trajectory 终态）
     mode_info = breakup.determine_mode(traj, diameter, material)
-    release_e = mode_info["release_energy_j"]
+    release_e = mode_info["release_energy_j"]   # 地撞=落地动能；空爆=大气沉积能量
     ground_eff = mode_info["ground_efficiency"]
 
     # 4. 实际释放能量的 TNT 当量
@@ -54,10 +54,10 @@ def run_simulation(params):
         impactor_mass_kg=traj["terminal"]["m_kg"],
     )
 
-    # 6. 冲击波（基于真实释放能量，焦耳）
+    # 6. 冲击波（地撞用落地动能，空爆用大气沉积能量）
     shock = shockwave.compute_shockwave(release_e, ground_eff)
 
-    # 7. 热辐射（基于真实释放能量，焦耳）
+    # 7. 热辐射（同上）
     ther = thermal.compute_thermal(release_e, ground_eff)
 
     # 8. 灾害等级（用真实释放能量定级，单位=吨TNT）
